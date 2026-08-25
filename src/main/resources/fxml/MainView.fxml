@@ -1,0 +1,106 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<?import javafx.geometry.Insets?>
+<?import javafx.scene.control.*?>
+<?import javafx.scene.layout.*?>
+
+<VBox xmlns="http://javafx.com/javafx"
+      xmlns:fx="http://javafx.com/fxml"
+      fx:controller="com.substack.ui.controller.MainController"
+      spacing="15"
+      stylesheets="@/css/style.css">
+
+    <padding>
+        <Insets top="20" right="20" bottom="20" left="20"/>
+    </padding>
+
+    <!-- Header -->
+    <VBox spacing="2">
+        <Label text="SubStack" styleClass="title-label"/>
+        <Label text="Fusionnez deux pistes de sous-titres en une seule piste bilingue stylisée" styleClass="subtitle-label"/>
+    </VBox>
+
+    <!-- Drag & Drop Zone -->
+    <StackPane fx:id="dropZone" styleClass="drop-zone"
+               onDragOver="#handleDragOver" onDragDropped="#handleDragDropped"
+               prefHeight="110">
+        <VBox alignment="CENTER" spacing="5">
+            <Label text="📁 Glissez-déposez vos fichiers .mkv, .mp4 ou dossiers ici" style="-fx-font-size: 14px; -fx-font-weight: bold; -fx-text-fill: #4b5563;"/>
+            <Label fx:id="lblFileSummary" text="Aucun fichier sélectionné" styleClass="subtitle-label"/>
+        </VBox>
+    </StackPane>
+
+    <!-- Subtitle Track Selection Section -->
+    <VBox styleClass="section-box" spacing="10">
+        <Label text="1. Sélection des Pistes" styleClass="section-title"/>
+        <GridPane hgap="15" vgap="10">
+            <Label text="Piste Principale (Référence) :" GridPane.columnIndex="0" GridPane.rowIndex="0"/>
+            <ComboBox fx:id="comboPrimaryTrack" prefWidth="280" GridPane.columnIndex="1" GridPane.rowIndex="0"/>
+
+            <Label text="Piste Secondaire :" GridPane.columnIndex="0" GridPane.rowIndex="1"/>
+            <ComboBox fx:id="comboSecondaryTrack" prefWidth="280" GridPane.columnIndex="1" GridPane.rowIndex="1"/>
+        </GridPane>
+    </VBox>
+
+    <!-- Style Customization Section -->
+    <HBox spacing="15">
+        <!-- Primary Style -->
+        <VBox styleClass="section-box" spacing="8" HBox.hgrow="ALWAYS">
+            <Label text="Style Piste Principale" styleClass="section-title"/>
+            <GridPane hgap="8" vgap="6">
+                <Label text="Police:" GridPane.columnIndex="0" GridPane.rowIndex="0"/>
+                <TextField fx:id="txtPrimaryFont" text="Arial" prefWidth="120" GridPane.columnIndex="1" GridPane.rowIndex="0"/>
+
+                <Label text="Taille:" GridPane.columnIndex="0" GridPane.rowIndex="1"/>
+                <Spinner fx:id="spnPrimarySize" initialValue="50" min="10" max="100" prefWidth="80" GridPane.columnIndex="1" GridPane.rowIndex="1"/>
+
+                <Label text="Couleur:" GridPane.columnIndex="0" GridPane.rowIndex="2"/>
+                <ColorPicker fx:id="cpPrimaryColor" GridPane.columnIndex="1" GridPane.rowIndex="2"/>
+
+                <CheckBox fx:id="chkPrimaryBold" text="Gras" GridPane.columnIndex="0" GridPane.rowIndex="3"/>
+                <CheckBox fx:id="chkPrimaryItalic" text="Italique" GridPane.columnIndex="1" GridPane.rowIndex="3"/>
+            </GridPane>
+        </VBox>
+
+        <!-- Secondary Style -->
+        <VBox styleClass="section-box" spacing="8" HBox.hgrow="ALWAYS">
+            <Label text="Style Piste Secondaire" styleClass="section-title"/>
+            <GridPane hgap="8" vgap="6">
+                <Label text="Police:" GridPane.columnIndex="0" GridPane.rowIndex="0"/>
+                <TextField fx:id="txtSecondaryFont" text="Arial" prefWidth="120" GridPane.columnIndex="1" GridPane.rowIndex="0"/>
+
+                <Label text="Taille:" GridPane.columnIndex="0" GridPane.rowIndex="1"/>
+                <Spinner fx:id="spnSecondarySize" initialValue="38" min="10" max="100" prefWidth="80" GridPane.columnIndex="1" GridPane.rowIndex="1"/>
+
+                <Label text="Couleur:" GridPane.columnIndex="0" GridPane.rowIndex="2"/>
+                <ColorPicker fx:id="cpSecondaryColor" GridPane.columnIndex="1" GridPane.rowIndex="2"/>
+
+                <CheckBox fx:id="chkSecondaryBold" text="Gras" GridPane.columnIndex="0" GridPane.rowIndex="3"/>
+                <CheckBox fx:id="chkSecondaryItalic" text="Italique" selected="true" GridPane.columnIndex="1" GridPane.rowIndex="3"/>
+            </GridPane>
+        </VBox>
+    </HBox>
+
+    <!-- Layout & Output Options -->
+    <VBox styleClass="section-box" spacing="10">
+        <Label text="2. Disposition et Sortie" styleClass="section-title"/>
+        <HBox spacing="25" alignment="CENTER_LEFT">
+            <VBox spacing="4">
+                <Label text="Positionnement :"/>
+                <ComboBox fx:id="comboPositionMode" prefWidth="200"/>
+            </VBox>
+            <VBox spacing="4">
+                <Label text="Option de sortie :"/>
+                <ComboBox fx:id="comboOutputOption" prefWidth="220"/>
+            </VBox>
+        </HBox>
+    </VBox>
+
+    <!-- Progress & Action -->
+    <VBox spacing="8" alignment="CENTER">
+        <ProgressBar fx:id="progressBar" progress="0.0" prefWidth="760"/>
+        <Label fx:id="lblStatus" text="Prêt." styleClass="subtitle-label"/>
+        <Button fx:id="btnStart" text="Lancer le traitement" styleClass="action-button" onAction="#handleStartProcessing" disable="true"/>
+    </VBox>
+
+</VBox>
