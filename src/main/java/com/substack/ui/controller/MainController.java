@@ -13,6 +13,7 @@ import com.substack.infrastructure.formatter.AssFormatter;
 import com.substack.infrastructure.io.FileScanner;
 import com.substack.infrastructure.parser.SrtParser;
 import com.substack.ui.component.TrackListCell;
+import com.substack.ui.service.I18nService;
 import com.substack.ui.service.NotificationService;
 import com.substack.ui.task.ProcessingTask;
 import com.substack.ui.util.ColorUtils;
@@ -64,6 +65,7 @@ public final class MainController {
     private final ProcessFfmpegService ffmpegService = new ProcessFfmpegService();
     private final CheckCompatibilityUseCase compatibilityUseCase = new CheckCompatibilityUseCase();
     private final NotificationService notificationService = new NotificationService();
+    private final I18nService i18n = I18nService.getInstance();
     private final ProcessBilingualSubtitlesUseCase processUseCase = new ProcessBilingualSubtitlesUseCase(
         ffmpegService, new SrtParser(), new TemporalOverlapMatcher(), new AssFormatter()
     );
@@ -108,7 +110,7 @@ public final class MainController {
 
     private void loadFilesAsync(List<Path> inputPaths) {
         btnStart.setDisable(true);
-        lblStatus.setText("Analyse des fichiers...");
+        lblStatus.setText(i18n.get("status.analyzing"));
 
         Task<List<MediaFile>> scanTask = new Task<>() {
             @Override
@@ -124,7 +126,9 @@ public final class MainController {
         };
 
         scanTask.setOnSucceeded(e -> onFilesLoaded(scanTask.getValue()));
-        scanTask.setOnFailed(e -> notificationService.showErrorDialog("Erreur d'analyse", scanTask.getException().getMessage()));
+        scanTask.setOnFailed(e -> notificationService.showErrorDialog(
+            i18n.get("dialog.error.title"), scanTask.getException().getMessage()
+        ));
 
         new Thread(scanTask).start();
     }
@@ -134,18 +138,20 @@ public final class MainController {
         loadedMediaFiles.addAll(mediaFiles);
 
         if (loadedMediaFiles.isEmpty()) {
-            lblFileSummary.setText("Aucun fichier compatible trouvé.");
+            lblFileSummary.setText(i18n.get("dropzone.summary.no_valid"));
             return;
         }
 
         if (!compatibilityUseCase.isCompatibleBatch(loadedMediaFiles)) {
-            lblFileSummary.setText("Fichiers incompatibles.");
-            notificationService.showErrorDialog("Erreur de compatibilité",
-                "Les fichiers sélectionnés ne possèdent pas une structure de sous-titres compatible. Veuillez traiter ces fichiers individuellement.");
+            lblFileSummary.setText(i18n.get("dropzone.summary.incompatible"));
+            notificationService.showErrorDialog(
+                i18n.get("dialog.compatibility.title"),
+                i18n.get("dialog.compatibility.content")
+            );
             return;
         }
 
-        lblFileSummary.setText(loadedMediaFiles.size() + " fichier(s) prêt(s)");
+        lblFileSummary.setText(i18n.get("dropzone.summary.ready", loadedMediaFiles.size()));
         List<SubtitleTrack> availableTracks = loadedMediaFiles.get(0).getTracks();
 
         comboPrimaryTrack.getItems().setAll(availableTracks);
@@ -157,7 +163,7 @@ public final class MainController {
         }
 
         btnStart.setDisable(false);
-        lblStatus.setText("Prêt.");
+        lblStatus.setText(i18n.get("status.ready"));
     }
 
     @FXML
@@ -166,7 +172,10 @@ public final class MainController {
         SubtitleTrack secondaryTrack = comboSecondaryTrack.getValue();
 
         if (primaryTrack == null || secondaryTrack == null) {
-            notificationService.showErrorDialog("Pistes manquantes", "Veuillez sélectionner les deux pistes de sous-titres.");
+            notificationService.showErrorDialog(
+                i18n.get("dialog.missing_tracks.title"),
+                i18n.get("dialog.missing_tracks.content")
+            );
             return;
         }
 
@@ -195,20 +204,23 @@ public final class MainController {
         task.setOnSucceeded(e -> {
             unbindProgress();
             progressBar.setProgress(1.0);
-            lblStatus.setText("Traitement terminé avec succès !");
+            lblStatus.setText(i18n.get("status.done"));
             btnStart.setDisable(false);
 
             notificationService.showSuccessDialog(
-                "Traitement Terminé",
-                "Sous-titres bilingues générés !",
-                "Le traitement est terminé. Les fichiers générés se trouvent dans le dossier d'origine de vos vidéos."
+                i18n.get("dialog.success.title"),
+                i18n.get("dialog.success.header"),
+                i18n.get("dialog.success.content")
             );
         });
 
         task.setOnFailed(e -> {
             unbindProgress();
             progressBar.setProgress(0.0);
-            notificationService.showErrorDialog("Erreur de traitement", task.getException().getMessage());
+            notificationService.showErrorDialog(
+                i18n.get("dialog.error.title"),
+                task.getException().getMessage()
+            );
             btnStart.setDisable(false);
         });
 
@@ -218,14 +230,5 @@ public final class MainController {
     private void unbindProgress() {
         progressBar.progressProperty().unbind();
         lblStatus.textProperty().unbind();
-    }
-
-    private void showErrorMessage(String title, String message) {
-        lblStatus.setText("Erreur : " + title);
-        Alert alert = new Alert(Alert.AlertType.ERROR);
-        alert.setTitle(title);
-        alert.setHeaderText(null);
-        alert.setContentText(message);
-        alert.showAndWait();
     }
 }
