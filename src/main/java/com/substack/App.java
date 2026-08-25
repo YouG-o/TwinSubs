@@ -1,21 +1,26 @@
 package com.substack;
 
 import javafx.application.Application;
+import javafx.fxml.FXMLLoader;
+import javafx.scene.Parent;
 import javafx.scene.Scene;
-import javafx.scene.control.Label;
-import javafx.scene.layout.StackPane;
 import javafx.stage.Stage;
+
+import java.io.IOException;
 
 public class App extends Application {
 
     @Override
-    public void start(Stage primaryStage) {
-        Label label = new Label("SubStack - Initialisation");
-        StackPane root = new StackPane(label);
-        Scene scene = new Scene(root, 800, 600);
+    public void start(Stage primaryStage) throws IOException {
+        FXMLLoader loader = new FXMLLoader(getClass().getResource("/fxml/MainView.fxml"));
+        Parent root = loader.load();
 
-        primaryStage.setTitle("SubStack");
+        Scene scene = new Scene(root, 800, 680);
+
+        primaryStage.setTitle("SubStack - Générateur de Sous-Titres Bilingues");
         primaryStage.setScene(scene);
+        primaryStage.setMinWidth(750);
+        primaryStage.setMinHeight(600);
         primaryStage.show();
     }
 
