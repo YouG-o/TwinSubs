@@ -28,4 +28,12 @@ public final class ProcessingProgress {
     public double getProgressRatio() {
         return progressRatio;
     }
+
+    public int getPercentage() {
+        return (int) Math.round(progressRatio * 100);
+    }
+
+    public String getFormattedStatus() {
+        return String.format("[%d%%] %s : %s", getPercentage(), currentFileName, statusMessage);
+    }
 }

@@ -13,6 +13,7 @@ import com.substack.infrastructure.formatter.AssFormatter;
 import com.substack.infrastructure.io.FileScanner;
 import com.substack.infrastructure.parser.SrtParser;
 import com.substack.ui.component.TrackListCell;
+import com.substack.ui.service.NotificationService;
 import com.substack.ui.task.ProcessingTask;
 import com.substack.ui.util.ColorUtils;
 
@@ -62,6 +63,7 @@ public final class MainController {
     private final FileScanner fileScanner = new FileScanner();
     private final ProcessFfmpegService ffmpegService = new ProcessFfmpegService();
     private final CheckCompatibilityUseCase compatibilityUseCase = new CheckCompatibilityUseCase();
+    private final NotificationService notificationService = new NotificationService();
     private final ProcessBilingualSubtitlesUseCase processUseCase = new ProcessBilingualSubtitlesUseCase(
         ffmpegService, new SrtParser(), new TemporalOverlapMatcher(), new AssFormatter()
     );
@@ -122,7 +124,7 @@ public final class MainController {
         };
 
         scanTask.setOnSucceeded(e -> onFilesLoaded(scanTask.getValue()));
-        scanTask.setOnFailed(e -> showErrorMessage("Erreur d'analyse", scanTask.getException().getMessage()));
+        scanTask.setOnFailed(e -> notificationService.showErrorDialog("Erreur d'analyse", scanTask.getException().getMessage()));
 
         new Thread(scanTask).start();
     }
@@ -138,7 +140,7 @@ public final class MainController {
 
         if (!compatibilityUseCase.isCompatibleBatch(loadedMediaFiles)) {
             lblFileSummary.setText("Fichiers incompatibles.");
-            showErrorMessage("Erreur de compatibilité",
+            notificationService.showErrorDialog("Erreur de compatibilité",
                 "Les fichiers sélectionnés ne possèdent pas une structure de sous-titres compatible. Veuillez traiter ces fichiers individuellement.");
             return;
         }
@@ -164,7 +166,7 @@ public final class MainController {
         SubtitleTrack secondaryTrack = comboSecondaryTrack.getValue();
 
         if (primaryTrack == null || secondaryTrack == null) {
-            showErrorMessage("Pistes manquantes", "Veuillez sélectionner les deux pistes de sous-titres.");
+            notificationService.showErrorDialog("Pistes manquantes", "Veuillez sélectionner les deux pistes de sous-titres.");
             return;
         }
 
@@ -192,13 +194,21 @@ public final class MainController {
 
         task.setOnSucceeded(e -> {
             unbindProgress();
+            progressBar.setProgress(1.0);
             lblStatus.setText("Traitement terminé avec succès !");
             btnStart.setDisable(false);
+
+            notificationService.showSuccessDialog(
+                "Traitement Terminé",
+                "Sous-titres bilingues générés !",
+                "Le traitement est terminé. Les fichiers générés se trouvent dans le dossier d'origine de vos vidéos."
+            );
         });
 
         task.setOnFailed(e -> {
             unbindProgress();
-            showErrorMessage("Erreur de traitement", task.getException().getMessage());
+            progressBar.setProgress(0.0);
+            notificationService.showErrorDialog("Erreur de traitement", task.getException().getMessage());
             btnStart.setDisable(false);
         });
 

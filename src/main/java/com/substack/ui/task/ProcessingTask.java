@@ -60,6 +60,6 @@ public final class ProcessingTask extends Task<Void> {
 
     private void onProgressUpdate(ProcessingProgress progress) {
         updateProgress(progress.getProgressRatio(), 1.0);
-        updateMessage(progress.getCurrentFileName() + " : " + progress.getStatusMessage());
+        updateMessage(progress.getFormattedStatus());
     }
 }
