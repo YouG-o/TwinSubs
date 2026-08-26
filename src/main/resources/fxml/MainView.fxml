@@ -6,7 +6,7 @@
 
 <VBox xmlns="http://javafx.com/javafx"
       xmlns:fx="http://javafx.com/fxml"
-      fx:controller="com.substack.ui.controller.MainController"
+      fx:controller="com.twinsubs.ui.controller.MainController"
       spacing="15"
       stylesheets="@/css/style.css">
 

@@ -3,12 +3,12 @@
          xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
     <modelVersion>4.0.0</modelVersion>
 
-    <groupId>com.substack</groupId>
-    <artifactId>substack</artifactId>
+    <groupId>com.twinsubs</groupId>
+    <artifactId>twinsubs</artifactId>
     <version>1.0.0-SNAPSHOT</version>
     <packaging>jar</packaging>
 
-    <name>SubStack</name>
+    <name>TwinSubs</name>
 
     <properties>
         <maven.compiler.source>21</maven.compiler.source>
@@ -63,7 +63,7 @@
                 <artifactId>javafx-maven-plugin</artifactId>
                 <version>0.0.8</version>
                 <configuration>
-                    <mainClass>com.substack.App</mainClass>
+                    <mainClass>com.twinsubs.App</mainClass>
                 </configuration>
             </plugin>
         </plugins>
