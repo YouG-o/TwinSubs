@@ -23,6 +23,7 @@
     <!-- Drag & Drop Zone -->
     <StackPane fx:id="dropZone" styleClass="drop-zone"
                onDragOver="#handleDragOver" onDragDropped="#handleDragDropped"
+               onMouseClicked="#handleZoneClick"
                prefHeight="110">
         <VBox alignment="CENTER" spacing="5">
             <Label text="%dropzone.prompt" style="-fx-font-size: 14px; -fx-font-weight: bold; -fx-text-fill: #4b5563;"/>
