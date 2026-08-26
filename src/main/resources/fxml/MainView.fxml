@@ -22,12 +22,12 @@
         <Label text="%app.subtitle" styleClass="subtitle-label"/>
     </VBox>
 
-    <!-- Initial Drag & Drop Zone Container -->
-    <VBox fx:id="vboxInitialDrop" spacing="5">
+        <!-- Initial Drag & Drop Zone Container (Centered Vertically) -->
+        <VBox fx:id="vboxInitialDrop" spacing="5" alignment="CENTER" minHeight="420">
     <StackPane fx:id="dropZone" styleClass="drop-zone"
                onDragOver="#handleDragOver" onDragDropped="#handleDragDropped"
                onMouseClicked="#handleZoneClick"
-                   prefHeight="180">
+                   prefHeight="180" maxWidth="680">
             <VBox alignment="CENTER" spacing="8">
                 <Label text="%dropzone.prompt" style="-fx-font-size: 15px; -fx-font-weight: bold; -fx-text-fill: #4b5563;"/>
             <Label fx:id="lblFileSummary" text="%dropzone.summary.none" styleClass="subtitle-label"/>
