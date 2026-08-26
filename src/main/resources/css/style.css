@@ -43,6 +43,12 @@
     -fx-text-fill: #374151;
 }
 
+.section-subtitle-sm {
+    -fx-font-size: 13px;
+    -fx-font-weight: bold;
+    -fx-text-fill: #4b5563;
+}
+
 .action-button {
     -fx-background-color: #2563eb;
     -fx-text-fill: white;
@@ -70,3 +76,4 @@
 .main-scroll-pane > .viewport {
     -fx-background-color: transparent;
 }
+

@@ -56,11 +56,14 @@
             </GridPane>
         </VBox>
 
-        <!-- Style Customization Section -->
-        <HBox spacing="15">
-            <!-- Primary Style -->
-                <VBox styleClass="section-box" spacing="8" HBox.hgrow="ALWAYS" minWidth="320">
-                <Label text="%section.style.primary_title" styleClass="section-title"/>
+        <!-- Styles & Positioning Section -->
+        <VBox styleClass="section-box" spacing="12">
+            <Label text="%section.styles.title" styleClass="section-title"/>
+
+            <HBox spacing="15">
+                <!-- Primary Style -->
+                <VBox spacing="8" HBox.hgrow="ALWAYS" minWidth="320">
+                    <Label text="%section.style.primary_title" styleClass="section-subtitle-sm"/>
                 <GridPane hgap="8" vgap="6">
                     <Label text="%label.font" GridPane.columnIndex="0" GridPane.rowIndex="0"/>
                     <TextField fx:id="txtPrimaryFont" text="Arial" prefWidth="120" GridPane.columnIndex="1" GridPane.rowIndex="0"/>
@@ -77,8 +80,8 @@
             </VBox>
 
             <!-- Secondary Style -->
-                <VBox styleClass="section-box" spacing="8" HBox.hgrow="ALWAYS" minWidth="320">
-                <Label text="%section.style.secondary_title" styleClass="section-title"/>
+                <VBox spacing="8" HBox.hgrow="ALWAYS" minWidth="320">
+                    <Label text="%section.style.secondary_title" styleClass="section-subtitle-sm"/>
                 <GridPane hgap="8" vgap="6">
                     <Label text="%label.font" GridPane.columnIndex="0" GridPane.rowIndex="0"/>
                     <TextField fx:id="txtSecondaryFont" text="Arial" prefWidth="120" GridPane.columnIndex="1" GridPane.rowIndex="0"/>
@@ -95,18 +98,20 @@
             </VBox>
         </HBox>
 
-        <!-- Layout & Output Options -->
-        <VBox styleClass="section-box" spacing="10">
-            <Label text="%section.layout.title" styleClass="section-title"/>
-            <HBox spacing="25" alignment="CENTER_LEFT">
-                <VBox spacing="4">
-                    <Label text="%label.position_mode"/>
-                        <ComboBox fx:id="comboPositionMode" prefWidth="220" minWidth="180"/>
-    </VBox>
-                <VBox spacing="4">
-                    <Label text="%label.output_option"/>
-                        <ComboBox fx:id="comboOutputOption" prefWidth="240" minWidth="180"/>
+            <Separator/>
+            <!-- Positioning Layout Option -->
+            <HBox spacing="15" alignment="CENTER_LEFT">
+                <Label text="%label.position_mode" style="-fx-font-weight: bold; -fx-text-fill: #374151;"/>
+                <ComboBox fx:id="comboPositionMode" prefWidth="250" minWidth="200"/>
+            </HBox>
 </VBox>
+
+        <!-- Settings & Output Section -->
+        <VBox styleClass="section-box" spacing="10">
+            <Label text="%section.settings.title" styleClass="section-title"/>
+            <HBox spacing="15" alignment="CENTER_LEFT">
+                <Label text="%label.output_option" style="-fx-font-weight: bold; -fx-text-fill: #374151;"/>
+                <ComboBox fx:id="comboOutputOption" prefWidth="280" minWidth="220"/>
             </HBox>
         </VBox>
 
