@@ -13,6 +13,8 @@ import com.twinsubs.infrastructure.formatter.AssFormatter;
 import com.twinsubs.infrastructure.io.FileScanner;
 import com.twinsubs.infrastructure.parser.SrtParser;
 import com.twinsubs.ui.component.TrackListCell;
+import com.twinsubs.ui.handler.DragAndDropHandler;
+import com.twinsubs.ui.service.FilePickerService;
 import com.twinsubs.ui.service.I18nService;
 import com.twinsubs.ui.service.NotificationService;
 import com.twinsubs.ui.task.ProcessingTask;
@@ -23,6 +25,7 @@ import javafx.fxml.FXML;
 import javafx.scene.control.*;
 import javafx.scene.input.DragEvent;
 import javafx.scene.input.Dragboard;
+import javafx.scene.input.MouseEvent;
 import javafx.scene.input.TransferMode;
 import javafx.scene.layout.StackPane;
 import javafx.scene.paint.Color;
@@ -65,6 +68,8 @@ public final class MainController {
     private final ProcessFfmpegService ffmpegService = new ProcessFfmpegService();
     private final CheckCompatibilityUseCase compatibilityUseCase = new CheckCompatibilityUseCase();
     private final NotificationService notificationService = new NotificationService();
+    private final FilePickerService filePickerService = new FilePickerService();
+    private final DragAndDropHandler dragAndDropHandler = new DragAndDropHandler();
     private final I18nService i18n = I18nService.getInstance();
     private final ProcessBilingualSubtitlesUseCase processUseCase = new ProcessBilingualSubtitlesUseCase(
         ffmpegService, new SrtParser(), new TemporalOverlapMatcher(), new AssFormatter()
@@ -91,21 +96,18 @@ public final class MainController {
 
     @FXML
     public void handleDragOver(DragEvent event) {
-        if (event.getDragboard().hasFiles()) {
-            event.acceptTransferModes(TransferMode.COPY);
-        }
-        event.consume();
+        dragAndDropHandler.handleDragOver(event);
     }
-
     @FXML
     public void handleDragDropped(DragEvent event) {
-        Dragboard db = event.getDragboard();
-        if (db.hasFiles()) {
-            List<Path> droppedPaths = db.getFiles().stream().map(File::toPath).toList();
-            loadFilesAsync(droppedPaths);
+        dragAndDropHandler.handleDragDropped(event, this::loadFilesAsync);
+    }
+    @FXML
+    public void handleZoneClick(MouseEvent event) {
+        List<Path> selectedPaths = filePickerService.pickMediaFiles(dropZone.getScene().getWindow());
+        if (!selectedPaths.isEmpty()) {
+            loadFilesAsync(selectedPaths);
         }
-        event.setDropCompleted(db.hasFiles());
-        event.consume();
     }
 
     private void loadFilesAsync(List<Path> inputPaths) {
@@ -232,3 +234,4 @@ public final class MainController {
         lblStatus.textProperty().unbind();
     }
 }
+
