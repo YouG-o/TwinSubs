@@ -27,7 +27,9 @@ import javafx.scene.input.DragEvent;
 import javafx.scene.input.Dragboard;
 import javafx.scene.input.MouseEvent;
 import javafx.scene.input.TransferMode;
+import javafx.scene.layout.HBox;
 import javafx.scene.layout.StackPane;
+import javafx.scene.layout.VBox;
 import javafx.scene.paint.Color;
 
 import java.io.File;
@@ -39,6 +41,11 @@ import java.util.List;
  * Controller managing user interactions and binding UI components to application use cases.
  */
 public final class MainController {
+
+    @FXML private VBox vboxInitialDrop;
+    @FXML private HBox hboxCompactSummary;
+    @FXML private Label lblCompactFileSummary;
+    @FXML private VBox vboxConfiguration;
 
     @FXML private StackPane dropZone;
     @FXML private Label lblFileSummary;
@@ -141,11 +148,13 @@ public final class MainController {
 
         if (loadedMediaFiles.isEmpty()) {
             lblFileSummary.setText(i18n.get("dropzone.summary.no_valid"));
+            setViewState(false);
             return;
         }
 
         if (!compatibilityUseCase.isCompatibleBatch(loadedMediaFiles)) {
             lblFileSummary.setText(i18n.get("dropzone.summary.incompatible"));
+            setViewState(false);
             notificationService.showErrorDialog(
                 i18n.get("dialog.compatibility.title"),
                 i18n.get("dialog.compatibility.content")
@@ -153,9 +162,15 @@ public final class MainController {
             return;
         }
 
-        lblFileSummary.setText(i18n.get("dropzone.summary.ready", loadedMediaFiles.size()));
-        List<SubtitleTrack> availableTracks = loadedMediaFiles.get(0).getTracks();
+        // Format compact file summary text
+        String firstFileName = loadedMediaFiles.get(0).getFileName();
+        if (loadedMediaFiles.size() == 1) {
+            lblCompactFileSummary.setText(i18n.get("file.summary.single", firstFileName));
+        } else {
+            lblCompactFileSummary.setText(i18n.get("file.summary.batch", firstFileName, loadedMediaFiles.size() - 1));
+        }
 
+        List<SubtitleTrack> availableTracks = loadedMediaFiles.get(0).getTracks();
         comboPrimaryTrack.getItems().setAll(availableTracks);
         comboSecondaryTrack.getItems().setAll(availableTracks);
 
@@ -164,8 +179,28 @@ public final class MainController {
             comboSecondaryTrack.setValue(availableTracks.size() > 1 ? availableTracks.get(1) : availableTracks.get(0));
         }
 
+        setViewState(true);
         btnStart.setDisable(false);
         lblStatus.setText(i18n.get("status.ready"));
+    }
+
+    @FXML
+    public void handleChangeFiles() {
+        loadedMediaFiles.clear();
+        lblFileSummary.setText(i18n.get("dropzone.summary.none"));
+        btnStart.setDisable(true);
+        setViewState(false);
+    }
+
+    private void setViewState(boolean filesLoaded) {
+        vboxInitialDrop.setVisible(!filesLoaded);
+        vboxInitialDrop.setManaged(!filesLoaded);
+
+        hboxCompactSummary.setVisible(filesLoaded);
+        hboxCompactSummary.setManaged(filesLoaded);
+
+        vboxConfiguration.setVisible(filesLoaded);
+        vboxConfiguration.setManaged(filesLoaded);
     }
 
     @FXML
@@ -199,7 +234,6 @@ public final class MainController {
             processUseCase, loadedMediaFiles, primaryTrack.getIndex(), secondaryTrack.getIndex(),
             primaryStyle, secondaryStyle, comboPositionMode.getValue(), comboOutputOption.getValue()
         );
-
         progressBar.progressProperty().bind(task.progressProperty());
         lblStatus.textProperty().bind(task.messageProperty());
 

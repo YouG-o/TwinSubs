@@ -4,12 +4,14 @@
 <?import javafx.scene.control.*?>
 <?import javafx.scene.layout.*?>
 
-<VBox xmlns="http://javafx.com/javafx"
+<ScrollPane xmlns="http://javafx.com/javafx"
       xmlns:fx="http://javafx.com/fxml"
       fx:controller="com.twinsubs.ui.controller.MainController"
-      spacing="15"
+            fitToWidth="true"
+            styleClass="main-scroll-pane"
       stylesheets="@/css/style.css">
 
+    <VBox spacing="15" minWidth="720">
     <padding>
         <Insets top="20" right="20" bottom="20" left="20"/>
     </padding>
@@ -20,88 +22,102 @@
         <Label text="%app.subtitle" styleClass="subtitle-label"/>
     </VBox>
 
-    <!-- Drag & Drop Zone -->
+        <!-- Initial Drag & Drop Zone Container (Centered Vertically) -->
+        <VBox fx:id="vboxInitialDrop" spacing="5" alignment="CENTER" minHeight="420">
     <StackPane fx:id="dropZone" styleClass="drop-zone"
                onDragOver="#handleDragOver" onDragDropped="#handleDragDropped"
                onMouseClicked="#handleZoneClick"
-               prefHeight="110">
-        <VBox alignment="CENTER" spacing="5">
-            <Label text="%dropzone.prompt" style="-fx-font-size: 14px; -fx-font-weight: bold; -fx-text-fill: #4b5563;"/>
+                   prefHeight="180" maxWidth="680">
+            <VBox alignment="CENTER" spacing="8">
+                <Label text="%dropzone.prompt" style="-fx-font-size: 15px; -fx-font-weight: bold; -fx-text-fill: #4b5563;"/>
             <Label fx:id="lblFileSummary" text="%dropzone.summary.none" styleClass="subtitle-label"/>
         </VBox>
     </StackPane>
-
-    <!-- Subtitle Track Selection Section -->
-    <VBox styleClass="section-box" spacing="10">
-        <Label text="%section.tracks.title" styleClass="section-title"/>
-        <GridPane hgap="15" vgap="10">
-            <Label text="%label.primary_track" GridPane.columnIndex="0" GridPane.rowIndex="0"/>
-            <ComboBox fx:id="comboPrimaryTrack" prefWidth="280" GridPane.columnIndex="1" GridPane.rowIndex="0"/>
-
-            <Label text="%label.secondary_track" GridPane.columnIndex="0" GridPane.rowIndex="1"/>
-            <ComboBox fx:id="comboSecondaryTrack" prefWidth="280" GridPane.columnIndex="1" GridPane.rowIndex="1"/>
-        </GridPane>
     </VBox>
 
-    <!-- Style Customization Section -->
-    <HBox spacing="15">
-        <!-- Primary Style -->
-        <VBox styleClass="section-box" spacing="8" HBox.hgrow="ALWAYS">
-            <Label text="%section.style.primary_title" styleClass="section-title"/>
-            <GridPane hgap="8" vgap="6">
-                <Label text="%label.font" GridPane.columnIndex="0" GridPane.rowIndex="0"/>
-                <TextField fx:id="txtPrimaryFont" text="Arial" prefWidth="120" GridPane.columnIndex="1" GridPane.rowIndex="0"/>
-
-                <Label text="%label.size" GridPane.columnIndex="0" GridPane.rowIndex="1"/>
-                <Spinner fx:id="spnPrimarySize" initialValue="50" min="10" max="100" prefWidth="80" GridPane.columnIndex="1" GridPane.rowIndex="1"/>
-
-                <Label text="%label.color" GridPane.columnIndex="0" GridPane.rowIndex="2"/>
-                <ColorPicker fx:id="cpPrimaryColor" GridPane.columnIndex="1" GridPane.rowIndex="2"/>
-
-                <CheckBox fx:id="chkPrimaryBold" text="%checkbox.bold" GridPane.columnIndex="0" GridPane.rowIndex="3"/>
-                <CheckBox fx:id="chkPrimaryItalic" text="%checkbox.italic" GridPane.columnIndex="1" GridPane.rowIndex="3"/>
-            </GridPane>
-        </VBox>
-
-        <!-- Secondary Style -->
-        <VBox styleClass="section-box" spacing="8" HBox.hgrow="ALWAYS">
-            <Label text="%section.style.secondary_title" styleClass="section-title"/>
-            <GridPane hgap="8" vgap="6">
-                <Label text="%label.font" GridPane.columnIndex="0" GridPane.rowIndex="0"/>
-                <TextField fx:id="txtSecondaryFont" text="Arial" prefWidth="120" GridPane.columnIndex="1" GridPane.rowIndex="0"/>
-
-                <Label text="%label.size" GridPane.columnIndex="0" GridPane.rowIndex="1"/>
-                <Spinner fx:id="spnSecondarySize" initialValue="38" min="10" max="100" prefWidth="80" GridPane.columnIndex="1" GridPane.rowIndex="1"/>
-
-                <Label text="%label.color" GridPane.columnIndex="0" GridPane.rowIndex="2"/>
-                <ColorPicker fx:id="cpSecondaryColor" GridPane.columnIndex="1" GridPane.rowIndex="2"/>
-
-                <CheckBox fx:id="chkSecondaryBold" text="%checkbox.bold" GridPane.columnIndex="0" GridPane.rowIndex="3"/>
-                <CheckBox fx:id="chkSecondaryItalic" text="%checkbox.italic" selected="true" GridPane.columnIndex="1" GridPane.rowIndex="3"/>
-            </GridPane>
-        </VBox>
+    <!-- Compact File Summary Bar (Visible when files loaded) -->
+    <HBox fx:id="hboxCompactSummary" styleClass="section-box" alignment="CENTER_LEFT" spacing="15" visible="false" managed="false">
+        <Label fx:id="lblCompactFileSummary" style="-fx-font-size: 13px; -fx-font-weight: bold; -fx-text-fill: #1f2937;" HBox.hgrow="ALWAYS"/>
+        <Button text="%btn.change_files" onAction="#handleChangeFiles" style="-fx-background-color: #e5e7eb; -fx-text-fill: #374151; -fx-cursor: hand;"/>
     </HBox>
 
-    <!-- Layout & Output Options -->
+    <!-- Configuration Sections & Action Container (Hidden by default) -->
+    <VBox fx:id="vboxConfiguration" spacing="15" visible="false" managed="false">
+
+        <!-- Subtitle Track Selection Section -->
     <VBox styleClass="section-box" spacing="10">
-        <Label text="%section.layout.title" styleClass="section-title"/>
-        <HBox spacing="25" alignment="CENTER_LEFT">
-            <VBox spacing="4">
-                <Label text="%label.position_mode"/>
-                <ComboBox fx:id="comboPositionMode" prefWidth="200"/>
+            <Label text="%section.tracks.title" styleClass="section-title"/>
+            <GridPane hgap="15" vgap="10">
+                <Label text="%label.primary_track" GridPane.columnIndex="0" GridPane.rowIndex="0"/>
+                    <ComboBox fx:id="comboPrimaryTrack" prefWidth="300" minWidth="200" GridPane.columnIndex="1" GridPane.rowIndex="0"/>
+
+                <Label text="%label.secondary_track" GridPane.columnIndex="0" GridPane.rowIndex="1"/>
+                    <ComboBox fx:id="comboSecondaryTrack" prefWidth="300" minWidth="200" GridPane.columnIndex="1" GridPane.rowIndex="1"/>
+            </GridPane>
+        </VBox>
+
+        <!-- Style Customization Section -->
+        <HBox spacing="15">
+            <!-- Primary Style -->
+                <VBox styleClass="section-box" spacing="8" HBox.hgrow="ALWAYS" minWidth="320">
+                <Label text="%section.style.primary_title" styleClass="section-title"/>
+                <GridPane hgap="8" vgap="6">
+                    <Label text="%label.font" GridPane.columnIndex="0" GridPane.rowIndex="0"/>
+                    <TextField fx:id="txtPrimaryFont" text="Arial" prefWidth="120" GridPane.columnIndex="1" GridPane.rowIndex="0"/>
+
+                    <Label text="%label.size" GridPane.columnIndex="0" GridPane.rowIndex="1"/>
+                    <Spinner fx:id="spnPrimarySize" initialValue="50" min="10" max="100" prefWidth="80" GridPane.columnIndex="1" GridPane.rowIndex="1"/>
+
+                    <Label text="%label.color" GridPane.columnIndex="0" GridPane.rowIndex="2"/>
+                    <ColorPicker fx:id="cpPrimaryColor" GridPane.columnIndex="1" GridPane.rowIndex="2"/>
+
+                    <CheckBox fx:id="chkPrimaryBold" text="%checkbox.bold" GridPane.columnIndex="0" GridPane.rowIndex="3"/>
+                    <CheckBox fx:id="chkPrimaryItalic" text="%checkbox.italic" GridPane.columnIndex="1" GridPane.rowIndex="3"/>
+                </GridPane>
             </VBox>
-            <VBox spacing="4">
-                <Label text="%label.output_option"/>
-                <ComboBox fx:id="comboOutputOption" prefWidth="220"/>
+
+            <!-- Secondary Style -->
+                <VBox styleClass="section-box" spacing="8" HBox.hgrow="ALWAYS" minWidth="320">
+                <Label text="%section.style.secondary_title" styleClass="section-title"/>
+                <GridPane hgap="8" vgap="6">
+                    <Label text="%label.font" GridPane.columnIndex="0" GridPane.rowIndex="0"/>
+                    <TextField fx:id="txtSecondaryFont" text="Arial" prefWidth="120" GridPane.columnIndex="1" GridPane.rowIndex="0"/>
+
+                    <Label text="%label.size" GridPane.columnIndex="0" GridPane.rowIndex="1"/>
+                    <Spinner fx:id="spnSecondarySize" initialValue="38" min="10" max="100" prefWidth="80" GridPane.columnIndex="1" GridPane.rowIndex="1"/>
+
+                    <Label text="%label.color" GridPane.columnIndex="0" GridPane.rowIndex="2"/>
+                    <ColorPicker fx:id="cpSecondaryColor" GridPane.columnIndex="1" GridPane.rowIndex="2"/>
+
+                    <CheckBox fx:id="chkSecondaryBold" text="%checkbox.bold" GridPane.columnIndex="0" GridPane.rowIndex="3"/>
+                    <CheckBox fx:id="chkSecondaryItalic" text="%checkbox.italic" selected="true" GridPane.columnIndex="1" GridPane.rowIndex="3"/>
+                </GridPane>
             </VBox>
         </HBox>
-    </VBox>
 
-    <!-- Progress & Action -->
-    <VBox spacing="8" alignment="CENTER">
-        <ProgressBar fx:id="progressBar" progress="0.0" prefWidth="760"/>
-        <Label fx:id="lblStatus" text="%status.ready" styleClass="subtitle-label"/>
-        <Button fx:id="btnStart" text="%btn.start" styleClass="action-button" onAction="#handleStartProcessing" disable="true"/>
+        <!-- Layout & Output Options -->
+        <VBox styleClass="section-box" spacing="10">
+            <Label text="%section.layout.title" styleClass="section-title"/>
+            <HBox spacing="25" alignment="CENTER_LEFT">
+                <VBox spacing="4">
+                    <Label text="%label.position_mode"/>
+                        <ComboBox fx:id="comboPositionMode" prefWidth="220" minWidth="180"/>
     </VBox>
-
+                <VBox spacing="4">
+                    <Label text="%label.output_option"/>
+                        <ComboBox fx:id="comboOutputOption" prefWidth="240" minWidth="180"/>
 </VBox>
+            </HBox>
+        </VBox>
+
+        <!-- Progress & Action -->
+        <VBox spacing="8" alignment="CENTER">
+            <ProgressBar fx:id="progressBar" progress="0.0" prefWidth="760"/>
+            <Label fx:id="lblStatus" text="%status.ready" styleClass="subtitle-label"/>
+            <Button fx:id="btnStart" text="%btn.start" styleClass="action-button" onAction="#handleStartProcessing" disable="true"/>
+        </VBox>
+
+    </VBox>
+</VBox>
+</ScrollPane>
+
