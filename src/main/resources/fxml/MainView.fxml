@@ -4,12 +4,14 @@
 <?import javafx.scene.control.*?>
 <?import javafx.scene.layout.*?>
 
-<VBox xmlns="http://javafx.com/javafx"
+<ScrollPane xmlns="http://javafx.com/javafx"
       xmlns:fx="http://javafx.com/fxml"
       fx:controller="com.twinsubs.ui.controller.MainController"
-      spacing="15"
+            fitToWidth="true"
+            styleClass="main-scroll-pane"
       stylesheets="@/css/style.css">
 
+    <VBox spacing="15" minWidth="720">
     <padding>
         <Insets top="20" right="20" bottom="20" left="20"/>
     </padding>
@@ -47,17 +49,17 @@
             <Label text="%section.tracks.title" styleClass="section-title"/>
             <GridPane hgap="15" vgap="10">
                 <Label text="%label.primary_track" GridPane.columnIndex="0" GridPane.rowIndex="0"/>
-                <ComboBox fx:id="comboPrimaryTrack" prefWidth="280" GridPane.columnIndex="1" GridPane.rowIndex="0"/>
+                    <ComboBox fx:id="comboPrimaryTrack" prefWidth="300" minWidth="200" GridPane.columnIndex="1" GridPane.rowIndex="0"/>
 
                 <Label text="%label.secondary_track" GridPane.columnIndex="0" GridPane.rowIndex="1"/>
-                <ComboBox fx:id="comboSecondaryTrack" prefWidth="280" GridPane.columnIndex="1" GridPane.rowIndex="1"/>
+                    <ComboBox fx:id="comboSecondaryTrack" prefWidth="300" minWidth="200" GridPane.columnIndex="1" GridPane.rowIndex="1"/>
             </GridPane>
         </VBox>
 
         <!-- Style Customization Section -->
         <HBox spacing="15">
             <!-- Primary Style -->
-            <VBox styleClass="section-box" spacing="8" HBox.hgrow="ALWAYS">
+                <VBox styleClass="section-box" spacing="8" HBox.hgrow="ALWAYS" minWidth="320">
                 <Label text="%section.style.primary_title" styleClass="section-title"/>
                 <GridPane hgap="8" vgap="6">
                     <Label text="%label.font" GridPane.columnIndex="0" GridPane.rowIndex="0"/>
@@ -75,7 +77,7 @@
             </VBox>
 
             <!-- Secondary Style -->
-            <VBox styleClass="section-box" spacing="8" HBox.hgrow="ALWAYS">
+                <VBox styleClass="section-box" spacing="8" HBox.hgrow="ALWAYS" minWidth="320">
                 <Label text="%section.style.secondary_title" styleClass="section-title"/>
                 <GridPane hgap="8" vgap="6">
                     <Label text="%label.font" GridPane.columnIndex="0" GridPane.rowIndex="0"/>
@@ -99,11 +101,11 @@
             <HBox spacing="25" alignment="CENTER_LEFT">
                 <VBox spacing="4">
                     <Label text="%label.position_mode"/>
-                    <ComboBox fx:id="comboPositionMode" prefWidth="200"/>
+                        <ComboBox fx:id="comboPositionMode" prefWidth="220" minWidth="180"/>
     </VBox>
                 <VBox spacing="4">
                     <Label text="%label.output_option"/>
-                    <ComboBox fx:id="comboOutputOption" prefWidth="220"/>
+                        <ComboBox fx:id="comboOutputOption" prefWidth="240" minWidth="180"/>
 </VBox>
             </HBox>
         </VBox>
@@ -116,5 +118,6 @@
         </VBox>
 
     </VBox>
-
 </VBox>
+</ScrollPane>
+
