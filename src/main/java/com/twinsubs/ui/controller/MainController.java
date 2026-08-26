@@ -17,12 +17,14 @@ import com.twinsubs.ui.handler.DragAndDropHandler;
 import com.twinsubs.ui.service.FilePickerService;
 import com.twinsubs.ui.service.I18nService;
 import com.twinsubs.ui.service.NotificationService;
+import com.twinsubs.ui.service.SubtitlePreviewManager;
 import com.twinsubs.ui.task.ProcessingTask;
 import com.twinsubs.ui.util.ColorUtils;
 
 import javafx.concurrent.Task;
 import javafx.fxml.FXML;
 import javafx.scene.control.*;
+import javafx.scene.image.ImageView;
 import javafx.scene.input.DragEvent;
 import javafx.scene.input.Dragboard;
 import javafx.scene.input.MouseEvent;
@@ -67,6 +69,10 @@ public final class MainController {
     @FXML private ComboBox<PositionMode> comboPositionMode;
     @FXML private ComboBox<OutputOption> comboOutputOption;
 
+    @FXML private ImageView imgPreviewBackground;
+    @FXML private VBox vboxPreviewTop;
+    @FXML private VBox vboxPreviewBottom;
+
     @FXML private ProgressBar progressBar;
     @FXML private Label lblStatus;
     @FXML private Button btnStart;
@@ -81,6 +87,8 @@ public final class MainController {
     private final ProcessBilingualSubtitlesUseCase processUseCase = new ProcessBilingualSubtitlesUseCase(
         ffmpegService, new SrtParser(), new TemporalOverlapMatcher(), new AssFormatter()
     );
+
+    private SubtitlePreviewManager previewManager;
 
     private final List<MediaFile> loadedMediaFiles = new ArrayList<>();
 
@@ -99,6 +107,10 @@ public final class MainController {
         comboPrimaryTrack.setButtonCell(new TrackListCell());
         comboSecondaryTrack.setCellFactory(p -> new TrackListCell());
         comboSecondaryTrack.setButtonCell(new TrackListCell());
+
+        previewManager = new SubtitlePreviewManager(imgPreviewBackground, vboxPreviewTop, vboxPreviewBottom);
+        attachPreviewListeners();
+        updatePreview();
     }
 
     @FXML
@@ -266,6 +278,46 @@ public final class MainController {
     private void unbindProgress() {
         progressBar.progressProperty().unbind();
         lblStatus.textProperty().unbind();
+    }
+
+    private void attachPreviewListeners() {
+        txtPrimaryFont.textProperty().addListener((obs, o, n) -> updatePreview());
+        spnPrimarySize.valueProperty().addListener((obs, o, n) -> updatePreview());
+        cpPrimaryColor.valueProperty().addListener((obs, o, n) -> updatePreview());
+        chkPrimaryBold.selectedProperty().addListener((obs, o, n) -> updatePreview());
+        chkPrimaryItalic.selectedProperty().addListener((obs, o, n) -> updatePreview());
+
+        txtSecondaryFont.textProperty().addListener((obs, o, n) -> updatePreview());
+        spnSecondarySize.valueProperty().addListener((obs, o, n) -> updatePreview());
+        cpSecondaryColor.valueProperty().addListener((obs, o, n) -> updatePreview());
+        chkSecondaryBold.selectedProperty().addListener((obs, o, n) -> updatePreview());
+        chkSecondaryItalic.selectedProperty().addListener((obs, o, n) -> updatePreview());
+
+        comboPositionMode.valueProperty().addListener((obs, o, n) -> updatePreview());
+    }
+
+    private void updatePreview() {
+        if (previewManager == null) {
+            return;
+        }
+
+        SubtitleStyle primaryStyle = new SubtitleStyle(
+            txtPrimaryFont.getText(),
+            spnPrimarySize.getValue() != null ? spnPrimarySize.getValue() : 50,
+            ColorUtils.toHexString(cpPrimaryColor.getValue()),
+            chkPrimaryBold.isSelected(),
+            chkPrimaryItalic.isSelected()
+        );
+
+        SubtitleStyle secondaryStyle = new SubtitleStyle(
+            txtSecondaryFont.getText(),
+            spnSecondarySize.getValue() != null ? spnSecondarySize.getValue() : 38,
+            ColorUtils.toHexString(cpSecondaryColor.getValue()),
+            chkSecondaryBold.isSelected(),
+            chkSecondaryItalic.isSelected()
+        );
+
+        previewManager.updatePreview(primaryStyle, secondaryStyle, comboPositionMode.getValue());
     }
 }
 

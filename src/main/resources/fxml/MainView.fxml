@@ -2,6 +2,7 @@
 
 <?import javafx.geometry.Insets?>
 <?import javafx.scene.control.*?>
+<?import javafx.scene.image.ImageView?>
 <?import javafx.scene.layout.*?>
 
 <ScrollPane xmlns="http://javafx.com/javafx"
@@ -11,7 +12,7 @@
             styleClass="main-scroll-pane"
       stylesheets="@/css/style.css">
 
-    <VBox spacing="15" minWidth="720">
+    <VBox spacing="15" minWidth="880">
     <padding>
         <Insets top="20" right="20" bottom="20" left="20"/>
     </padding>
@@ -41,18 +42,22 @@
         <Button text="%btn.change_files" onAction="#handleChangeFiles" style="-fx-background-color: #e5e7eb; -fx-text-fill: #374151; -fx-cursor: hand;"/>
     </HBox>
 
-    <!-- Configuration Sections & Action Container (Hidden by default) -->
+    <!-- Configuration & Live Preview Area (Hidden by default) -->
     <VBox fx:id="vboxConfiguration" spacing="15" visible="false" managed="false">
+            <HBox spacing="15">
+
+            <!-- Left Column: Controls & Configuration -->
+            <VBox spacing="15" HBox.hgrow="ALWAYS" prefWidth="480" minWidth="420">
 
         <!-- Subtitle Track Selection Section -->
     <VBox styleClass="section-box" spacing="10">
             <Label text="%section.tracks.title" styleClass="section-title"/>
             <GridPane hgap="15" vgap="10">
                 <Label text="%label.primary_track" GridPane.columnIndex="0" GridPane.rowIndex="0"/>
-                    <ComboBox fx:id="comboPrimaryTrack" prefWidth="300" minWidth="200" GridPane.columnIndex="1" GridPane.rowIndex="0"/>
+                    <ComboBox fx:id="comboPrimaryTrack" prefWidth="250" minWidth="180" GridPane.columnIndex="1" GridPane.rowIndex="0"/>
 
                 <Label text="%label.secondary_track" GridPane.columnIndex="0" GridPane.rowIndex="1"/>
-                    <ComboBox fx:id="comboSecondaryTrack" prefWidth="300" minWidth="200" GridPane.columnIndex="1" GridPane.rowIndex="1"/>
+                    <ComboBox fx:id="comboSecondaryTrack" prefWidth="250" minWidth="180" GridPane.columnIndex="1" GridPane.rowIndex="1"/>
             </GridPane>
         </VBox>
 
@@ -62,11 +67,11 @@
 
             <HBox spacing="15">
                 <!-- Primary Style -->
-                <VBox spacing="8" HBox.hgrow="ALWAYS" minWidth="320">
+                <VBox spacing="8" HBox.hgrow="ALWAYS">
                     <Label text="%section.style.primary_title" styleClass="section-subtitle-sm"/>
                 <GridPane hgap="8" vgap="6">
                     <Label text="%label.font" GridPane.columnIndex="0" GridPane.rowIndex="0"/>
-                    <TextField fx:id="txtPrimaryFont" text="Arial" prefWidth="120" GridPane.columnIndex="1" GridPane.rowIndex="0"/>
+                    <TextField fx:id="txtPrimaryFont" text="Arial" prefWidth="110" GridPane.columnIndex="1" GridPane.rowIndex="0"/>
 
                     <Label text="%label.size" GridPane.columnIndex="0" GridPane.rowIndex="1"/>
                     <Spinner fx:id="spnPrimarySize" initialValue="50" min="10" max="100" prefWidth="80" GridPane.columnIndex="1" GridPane.rowIndex="1"/>
@@ -80,11 +85,11 @@
             </VBox>
 
             <!-- Secondary Style -->
-                <VBox spacing="8" HBox.hgrow="ALWAYS" minWidth="320">
+                <VBox spacing="8" HBox.hgrow="ALWAYS">
                     <Label text="%section.style.secondary_title" styleClass="section-subtitle-sm"/>
                 <GridPane hgap="8" vgap="6">
                     <Label text="%label.font" GridPane.columnIndex="0" GridPane.rowIndex="0"/>
-                    <TextField fx:id="txtSecondaryFont" text="Arial" prefWidth="120" GridPane.columnIndex="1" GridPane.rowIndex="0"/>
+                    <TextField fx:id="txtSecondaryFont" text="Arial" prefWidth="110" GridPane.columnIndex="1" GridPane.rowIndex="0"/>
 
                     <Label text="%label.size" GridPane.columnIndex="0" GridPane.rowIndex="1"/>
                     <Spinner fx:id="spnSecondarySize" initialValue="38" min="10" max="100" prefWidth="80" GridPane.columnIndex="1" GridPane.rowIndex="1"/>
@@ -102,7 +107,7 @@
             <!-- Positioning Layout Option -->
             <HBox spacing="15" alignment="CENTER_LEFT">
                 <Label text="%label.position_mode" style="-fx-font-weight: bold; -fx-text-fill: #374151;"/>
-                <ComboBox fx:id="comboPositionMode" prefWidth="250" minWidth="200"/>
+                <ComboBox fx:id="comboPositionMode" prefWidth="220" minWidth="180"/>
             </HBox>
 </VBox>
 
@@ -111,9 +116,35 @@
             <Label text="%section.settings.title" styleClass="section-title"/>
             <HBox spacing="15" alignment="CENTER_LEFT">
                 <Label text="%label.output_option" style="-fx-font-weight: bold; -fx-text-fill: #374151;"/>
-                <ComboBox fx:id="comboOutputOption" prefWidth="280" minWidth="220"/>
+                <ComboBox fx:id="comboOutputOption" prefWidth="240" minWidth="180"/>
             </HBox>
         </VBox>
+        </VBox>
+
+        <!-- Right Column: Live Subtitle Preview Pane -->
+        <VBox styleClass="section-box" spacing="10" prefWidth="420" minWidth="380" HBox.hgrow="NEVER">
+            <Label text="%section.preview.title" styleClass="section-title"/>
+
+            <StackPane fx:id="previewCanvas" styleClass="preview-container" prefWidth="390" prefHeight="260" minHeight="260">
+                <!-- Video Background Image -->
+                <ImageView fx:id="imgPreviewBackground" fitWidth="390" fitHeight="260" preserveRatio="false"/>
+
+                <!-- Top Subtitles Container -->
+                <VBox fx:id="vboxPreviewTop" alignment="TOP_CENTER" spacing="4" StackPane.alignment="TOP_CENTER">
+                    <padding>
+                        <Insets top="15" right="10" bottom="10" left="10"/>
+                    </padding>
+                </VBox>
+
+                <!-- Bottom Subtitles Container -->
+                <VBox fx:id="vboxPreviewBottom" alignment="BOTTOM_CENTER" spacing="4" StackPane.alignment="BOTTOM_CENTER">
+                    <padding>
+                        <Insets top="10" right="10" bottom="15" left="10"/>
+                    </padding>
+                </VBox>
+            </StackPane>
+        </VBox>
+    </HBox>
 
         <!-- Progress & Action -->
         <VBox spacing="8" alignment="CENTER">

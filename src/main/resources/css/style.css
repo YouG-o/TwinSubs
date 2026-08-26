@@ -49,6 +49,21 @@
     -fx-text-fill: #4b5563;
 }
 
+/* Preview Box & Canvas */
+.preview-container {
+    -fx-background-color: #0d0d11;
+    -fx-background-radius: 8;
+    -fx-border-color: #374151;
+    -fx-border-width: 1;
+    -fx-border-radius: 8;
+}
+
+.subtitle-preview-text {
+    -fx-effect: dropshadow(two-pass-box, black, 4, 0.8, 0, 0);
+    -fx-alignment: center;
+    -fx-text-alignment: center;
+}
+
 .action-button {
     -fx-background-color: #2563eb;
     -fx-text-fill: white;
