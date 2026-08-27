@@ -5,9 +5,11 @@ import com.twinsubs.application.usecase.CheckCompatibilityUseCase;
 import com.twinsubs.application.usecase.ProcessBilingualSubtitlesUseCase;
 import com.twinsubs.domain.model.MediaFile;
 import com.twinsubs.domain.model.PositionMode;
-import com.twinsubs.domain.model.SubtitleStyle;
 import com.twinsubs.domain.model.SubtitleLayout;
+import com.twinsubs.domain.model.SubtitleStyle;
 import com.twinsubs.domain.model.SubtitleTrack;
+import com.twinsubs.domain.service.SmartMultiSegmentMatcher;
+import com.twinsubs.domain.service.SubtitleMatcher;
 import com.twinsubs.domain.service.TemporalOverlapMatcher;
 import com.twinsubs.infrastructure.ffmpeg.ProcessFfmpegService;
 import com.twinsubs.infrastructure.formatter.AssFormatter;
@@ -27,15 +29,12 @@ import javafx.fxml.FXML;
 import javafx.scene.control.*;
 import javafx.scene.image.ImageView;
 import javafx.scene.input.DragEvent;
-import javafx.scene.input.Dragboard;
 import javafx.scene.input.MouseEvent;
-import javafx.scene.input.TransferMode;
 import javafx.scene.layout.HBox;
 import javafx.scene.layout.StackPane;
 import javafx.scene.layout.VBox;
 import javafx.scene.paint.Color;
 
-import java.io.File;
 import java.nio.file.Path;
 import java.util.ArrayList;
 import java.util.List;
@@ -69,6 +68,8 @@ public final class MainController {
 
     @FXML private ComboBox<PositionMode> comboPositionMode;
     @FXML private CheckBox chkPrimaryFirst;
+    @FXML private RadioButton radioMethodDefault;
+    @FXML private RadioButton radioMethodSmart;
     @FXML private ComboBox<OutputOption> comboOutputOption;
 
     @FXML private ImageView imgPreviewBackground;
@@ -87,7 +88,7 @@ public final class MainController {
     private final DragAndDropHandler dragAndDropHandler = new DragAndDropHandler();
     private final I18nService i18n = I18nService.getInstance();
     private final ProcessBilingualSubtitlesUseCase processUseCase = new ProcessBilingualSubtitlesUseCase(
-        ffmpegService, new SrtParser(), new TemporalOverlapMatcher(), new AssFormatter()
+        ffmpegService, new SrtParser(), new AssFormatter()
     );
 
     private SubtitlePreviewManager previewManager;
@@ -120,10 +121,12 @@ public final class MainController {
     public void handleDragOver(DragEvent event) {
         dragAndDropHandler.handleDragOver(event);
     }
+
     @FXML
     public void handleDragDropped(DragEvent event) {
         dragAndDropHandler.handleDragDropped(event, this::loadFilesAsync);
     }
+
     @FXML
     public void handleZoneClick(MouseEvent event) {
         List<Path> selectedPaths = filePickerService.pickMediaFiles(dropZone.getScene().getWindow());
@@ -177,7 +180,6 @@ public final class MainController {
             return;
         }
 
-        // Format compact file summary text
         String firstFileName = loadedMediaFiles.get(0).getFileName();
         if (loadedMediaFiles.size() == 1) {
             lblCompactFileSummary.setText(i18n.get("file.summary.single", firstFileName));
@@ -243,11 +245,15 @@ public final class MainController {
             chkSecondaryBold.isSelected(), chkSecondaryItalic.isSelected()
         );
 
+        SubtitleMatcher selectedMatcher = (radioMethodSmart != null && radioMethodSmart.isSelected())
+            ? new SmartMultiSegmentMatcher()
+            : new TemporalOverlapMatcher();
+
         btnStart.setDisable(true);
 
         ProcessingTask task = new ProcessingTask(
             processUseCase, loadedMediaFiles, primaryTrack.getIndex(), secondaryTrack.getIndex(),
-            primaryStyle, secondaryStyle, createSubtitleLayout(), comboOutputOption.getValue()
+            primaryStyle, secondaryStyle, createSubtitleLayout(), selectedMatcher, comboOutputOption.getValue()
         );
         progressBar.progressProperty().bind(task.progressProperty());
         lblStatus.textProperty().bind(task.messageProperty());
@@ -330,4 +336,3 @@ public final class MainController {
         return new SubtitleLayout(mode, chkPrimaryFirst.isSelected());
     }
 }
-
