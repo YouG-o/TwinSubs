@@ -2,6 +2,7 @@ package com.twinsubs.infrastructure.formatter;
 
 import com.twinsubs.domain.model.MergedSubtitleEntry;
 import com.twinsubs.domain.model.PositionMode;
+import com.twinsubs.domain.model.SubtitleLayout;
 import com.twinsubs.domain.model.SubtitleStyle;
 
 import java.util.List;
@@ -20,10 +21,20 @@ public final class AssFormatter {
                          SubtitleStyle secondaryStyle,
                          PositionMode positionMode) {
 
+        return format(entries, primaryStyle, secondaryStyle, SubtitleLayout.defaultLayout(positionMode));
+    }
+
+    public String format(List<MergedSubtitleEntry> entries,
+                         SubtitleStyle primaryStyle,
+                         SubtitleStyle secondaryStyle,
+                         SubtitleLayout layout) {
+
         Objects.requireNonNull(entries, "Entries cannot be null");
         Objects.requireNonNull(primaryStyle, "Primary style cannot be null");
         Objects.requireNonNull(secondaryStyle, "Secondary style cannot be null");
-        Objects.requireNonNull(positionMode, "Position mode cannot be null");
+        Objects.requireNonNull(layout, "Subtitle layout cannot be null");
+
+        PositionMode positionMode = layout.positionMode();
 
         StringBuilder sb = new StringBuilder();
 
@@ -52,7 +63,7 @@ public final class AssFormatter {
           .append("Format: Layer, Start, End, Style, Name, MarginL, MarginR, MarginV, Effect, Text\n");
 
         for (MergedSubtitleEntry entry : entries) {
-            String assText = formatDialogueText(entry, primaryStyle, secondaryStyle, positionMode);
+            String assText = formatDialogueText(entry, primaryStyle, secondaryStyle, layout);
             sb.append(String.format("Dialogue: 0,%s,%s,Default,,0,0,0,,%s\n",
                 formatAssTimestamp(entry.getStartTimeMs()),
                 formatAssTimestamp(entry.getEndTimeMs()),
@@ -79,7 +90,9 @@ public final class AssFormatter {
     private String formatDialogueText(MergedSubtitleEntry entry,
                                      SubtitleStyle primaryStyle,
                                      SubtitleStyle secondaryStyle,
-                                     PositionMode positionMode) {
+                                     SubtitleLayout layout) {
+
+        PositionMode positionMode = layout.positionMode();
 
         String primaryFormatted = entry.getPrimaryText()
             .map(t -> applyInlineStyle(t, primaryStyle))
@@ -91,12 +104,13 @@ public final class AssFormatter {
 
         if (!primaryFormatted.isEmpty() && !secondaryFormatted.isEmpty()) {
             if (positionMode == PositionMode.TOP_AND_BOTTOM) {
-                // When split, secondary is top, primary is bottom.
-                // Inline placement tag \an8 forces top placement for secondary
-                return "{\\an8}" + escapeAssText(secondaryFormatted) + "\\N" + escapeAssText(primaryFormatted);
+                String topText = layout.isFirstTrackPrimary() ? primaryFormatted : secondaryFormatted;
+                String bottomText = layout.isFirstTrackPrimary() ? secondaryFormatted : primaryFormatted;
+                return "{\\an8}" + escapeAssText(topText) + "\\N" + escapeAssText(bottomText);
             } else {
-                // Secondary above Primary
-                return escapeAssText(secondaryFormatted) + "\\N" + escapeAssText(primaryFormatted);
+                String firstText = layout.isFirstTrackPrimary() ? primaryFormatted : secondaryFormatted;
+                String secondText = layout.isFirstTrackPrimary() ? secondaryFormatted : primaryFormatted;
+                return escapeAssText(firstText) + "\\N" + escapeAssText(secondText);
             }
         } else if (!primaryFormatted.isEmpty()) {
             return escapeAssText(primaryFormatted);

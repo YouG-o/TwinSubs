@@ -6,6 +6,7 @@ import com.twinsubs.domain.model.MediaFile;
 import com.twinsubs.domain.model.MergedSubtitleEntry;
 import com.twinsubs.domain.model.PositionMode;
 import com.twinsubs.domain.model.SubtitleEntry;
+import com.twinsubs.domain.model.SubtitleLayout;
 import com.twinsubs.domain.model.SubtitleStyle;
 import com.twinsubs.domain.service.SubtitleMatcher;
 import com.twinsubs.infrastructure.ffmpeg.FfmpegService;
@@ -51,6 +52,19 @@ public final class ProcessBilingualSubtitlesUseCase {
                         OutputOption outputOption,
                         Consumer<ProcessingProgress> progressCallback) throws IOException, InterruptedException {
 
+                execute(files, primaryTrackIndex, secondaryTrackIndex, primaryStyle, secondaryStyle,
+                    SubtitleLayout.defaultLayout(positionMode), outputOption, progressCallback);
+                }
+
+                public void execute(List<MediaFile> files,
+                        int primaryTrackIndex,
+                        int secondaryTrackIndex,
+                        SubtitleStyle primaryStyle,
+                        SubtitleStyle secondaryStyle,
+                        SubtitleLayout layout,
+                        OutputOption outputOption,
+                        Consumer<ProcessingProgress> progressCallback) throws IOException, InterruptedException {
+
         Objects.requireNonNull(files, "Files list cannot be null");
         int totalFiles = files.size();
 
@@ -81,7 +95,7 @@ public final class ProcessBilingualSubtitlesUseCase {
                 reportProgress(progressCallback, mediaFile.getFileName(), "Formatting ASS content...", baseRatio + (0.6 / totalFiles));
 
                 // 4. Generate ASS text content
-                String assContent = assFormatter.format(mergedEntries, primaryStyle, secondaryStyle, positionMode);
+                String assContent = assFormatter.format(mergedEntries, primaryStyle, secondaryStyle, layout);
 
                 // 5. Output management
                 Path assOutputPath = getAssOutputPath(mediaFile.getFilePath());

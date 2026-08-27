@@ -6,6 +6,7 @@ import com.twinsubs.application.usecase.ProcessBilingualSubtitlesUseCase;
 import com.twinsubs.domain.model.MediaFile;
 import com.twinsubs.domain.model.PositionMode;
 import com.twinsubs.domain.model.SubtitleStyle;
+import com.twinsubs.domain.model.SubtitleLayout;
 import com.twinsubs.domain.model.SubtitleTrack;
 import com.twinsubs.domain.service.TemporalOverlapMatcher;
 import com.twinsubs.infrastructure.ffmpeg.ProcessFfmpegService;
@@ -67,6 +68,7 @@ public final class MainController {
     @FXML private CheckBox chkSecondaryItalic;
 
     @FXML private ComboBox<PositionMode> comboPositionMode;
+    @FXML private CheckBox chkPrimaryFirst;
     @FXML private ComboBox<OutputOption> comboOutputOption;
 
     @FXML private ImageView imgPreviewBackground;
@@ -99,6 +101,7 @@ public final class MainController {
 
         comboPositionMode.getItems().setAll(PositionMode.values());
         comboPositionMode.setValue(PositionMode.BOTH_BOTTOM);
+        chkPrimaryFirst.setSelected(false);
 
         comboOutputOption.getItems().setAll(OutputOption.values());
         comboOutputOption.setValue(OutputOption.EMBED_IN_MKV);
@@ -244,7 +247,7 @@ public final class MainController {
 
         ProcessingTask task = new ProcessingTask(
             processUseCase, loadedMediaFiles, primaryTrack.getIndex(), secondaryTrack.getIndex(),
-            primaryStyle, secondaryStyle, comboPositionMode.getValue(), comboOutputOption.getValue()
+            primaryStyle, secondaryStyle, createSubtitleLayout(), comboOutputOption.getValue()
         );
         progressBar.progressProperty().bind(task.progressProperty());
         lblStatus.textProperty().bind(task.messageProperty());
@@ -294,6 +297,7 @@ public final class MainController {
         chkSecondaryItalic.selectedProperty().addListener((obs, o, n) -> updatePreview());
 
         comboPositionMode.valueProperty().addListener((obs, o, n) -> updatePreview());
+        chkPrimaryFirst.selectedProperty().addListener((obs, o, n) -> updatePreview());
     }
 
     private void updatePreview() {
@@ -317,7 +321,13 @@ public final class MainController {
             chkSecondaryItalic.isSelected()
         );
 
-        previewManager.updatePreview(primaryStyle, secondaryStyle, comboPositionMode.getValue());
+        previewManager.updatePreview(primaryStyle, secondaryStyle, createSubtitleLayout());
+    }
+
+    private SubtitleLayout createSubtitleLayout() {
+        PositionMode mode = comboPositionMode.getValue() != null
+            ? comboPositionMode.getValue() : PositionMode.BOTH_BOTTOM;
+        return new SubtitleLayout(mode, chkPrimaryFirst.isSelected());
     }
 }
 

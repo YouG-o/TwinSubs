@@ -1,6 +1,7 @@
 package com.twinsubs.ui.service;
 
 import com.twinsubs.domain.model.PositionMode;
+import com.twinsubs.domain.model.SubtitleLayout;
 import com.twinsubs.domain.model.SubtitleStyle;
 import javafx.scene.control.Label;
 import javafx.scene.image.Image;
@@ -43,20 +44,27 @@ public final class SubtitlePreviewManager {
     }
 
     public void updatePreview(SubtitleStyle primaryStyle, SubtitleStyle secondaryStyle, PositionMode positionMode) {
+        updatePreview(primaryStyle, secondaryStyle, SubtitleLayout.defaultLayout(positionMode));
+    }
+
+    public void updatePreview(SubtitleStyle primaryStyle, SubtitleStyle secondaryStyle, SubtitleLayout layout) {
         vboxPreviewTop.getChildren().clear();
         vboxPreviewBottom.getChildren().clear();
 
         Label lblPrimary = createPreviewLabel(i18n.get("preview.text.primary"), primaryStyle);
         Label lblSecondary = createPreviewLabel(i18n.get("preview.text.secondary"), secondaryStyle);
 
-        PositionMode mode = (positionMode != null) ? positionMode : PositionMode.BOTH_BOTTOM;
+        PositionMode mode = layout != null ? layout.positionMode() : PositionMode.BOTH_BOTTOM;
+        boolean primaryFirst = layout != null && layout.isFirstTrackPrimary();
+        Label firstLabel = primaryFirst ? lblPrimary : lblSecondary;
+        Label secondLabel = primaryFirst ? lblSecondary : lblPrimary;
 
         switch (mode) {
-            case BOTH_BOTTOM -> vboxPreviewBottom.getChildren().addAll(lblSecondary, lblPrimary);
-            case BOTH_TOP -> vboxPreviewTop.getChildren().addAll(lblSecondary, lblPrimary);
+            case BOTH_BOTTOM -> vboxPreviewBottom.getChildren().addAll(firstLabel, secondLabel);
+            case BOTH_TOP -> vboxPreviewTop.getChildren().addAll(firstLabel, secondLabel);
             case TOP_AND_BOTTOM -> {
-                vboxPreviewTop.getChildren().add(lblSecondary);
-                vboxPreviewBottom.getChildren().add(lblPrimary);
+                vboxPreviewTop.getChildren().add(firstLabel);
+                vboxPreviewBottom.getChildren().add(secondLabel);
             }
         }
     }

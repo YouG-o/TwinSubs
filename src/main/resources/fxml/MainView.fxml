@@ -108,6 +108,7 @@
             <HBox spacing="15" alignment="CENTER_LEFT">
                 <Label text="%label.position_mode" style="-fx-font-weight: bold; -fx-text-fill: #374151;"/>
                 <ComboBox fx:id="comboPositionMode" prefWidth="220" minWidth="180"/>
+                <CheckBox fx:id="chkPrimaryFirst" text="%checkbox.primary_first"/>
             </HBox>
 </VBox>
 

@@ -5,6 +5,7 @@ import com.twinsubs.application.dto.ProcessingProgress;
 import com.twinsubs.application.usecase.ProcessBilingualSubtitlesUseCase;
 import com.twinsubs.domain.model.MediaFile;
 import com.twinsubs.domain.model.PositionMode;
+import com.twinsubs.domain.model.SubtitleLayout;
 import com.twinsubs.domain.model.SubtitleStyle;
 import javafx.concurrent.Task;
 
@@ -22,7 +23,7 @@ public final class ProcessingTask extends Task<Void> {
     private final int secondaryTrackIndex;
     private final SubtitleStyle primaryStyle;
     private final SubtitleStyle secondaryStyle;
-    private final PositionMode positionMode;
+    private final SubtitleLayout layout;
     private final OutputOption outputOption;
 
     public ProcessingTask(ProcessBilingualSubtitlesUseCase useCase,
@@ -33,13 +34,25 @@ public final class ProcessingTask extends Task<Void> {
                           SubtitleStyle secondaryStyle,
                           PositionMode positionMode,
                           OutputOption outputOption) {
+                this(useCase, files, primaryTrackIndex, secondaryTrackIndex, primaryStyle, secondaryStyle,
+                    SubtitleLayout.defaultLayout(positionMode), outputOption);
+                }
+
+                public ProcessingTask(ProcessBilingualSubtitlesUseCase useCase,
+                          List<MediaFile> files,
+                          int primaryTrackIndex,
+                          int secondaryTrackIndex,
+                          SubtitleStyle primaryStyle,
+                          SubtitleStyle secondaryStyle,
+                          SubtitleLayout layout,
+                          OutputOption outputOption) {
         this.useCase = Objects.requireNonNull(useCase);
         this.files = Objects.requireNonNull(files);
         this.primaryTrackIndex = primaryTrackIndex;
         this.secondaryTrackIndex = secondaryTrackIndex;
         this.primaryStyle = Objects.requireNonNull(primaryStyle);
         this.secondaryStyle = Objects.requireNonNull(secondaryStyle);
-        this.positionMode = Objects.requireNonNull(positionMode);
+        this.layout = Objects.requireNonNull(layout);
         this.outputOption = Objects.requireNonNull(outputOption);
     }
 
@@ -51,7 +64,7 @@ public final class ProcessingTask extends Task<Void> {
             secondaryTrackIndex,
             primaryStyle,
             secondaryStyle,
-            positionMode,
+            layout,
             outputOption,
             this::onProgressUpdate
         );
