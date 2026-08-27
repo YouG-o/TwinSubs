@@ -82,6 +82,24 @@
     -fx-background-color: #9ca3af;
 }
 
+.info-button {
+    -fx-background-color: #e5e7eb;
+    -fx-text-fill: #4b5563;
+    -fx-font-size: 11px;
+    -fx-font-weight: bold;
+    -fx-background-radius: 10;
+    -fx-min-width: 18px;
+    -fx-max-width: 18px;
+    -fx-min-height: 18px;
+    -fx-max-height: 18px;
+    -fx-padding: 0;
+    -fx-cursor: hand;
+}
+
+.info-button:hover {
+    -fx-background-color: #d1d5db;
+}
+
 .main-scroll-pane {
     -fx-background-color: transparent;
     -fx-background: #f4f5f7;
