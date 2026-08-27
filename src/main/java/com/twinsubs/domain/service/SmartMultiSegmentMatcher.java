@@ -5,93 +5,53 @@ import com.twinsubs.domain.model.SubtitleEntry;
 
 import java.util.ArrayList;
 import java.util.Comparator;
-import java.util.HashMap;
+import java.util.HashSet;
 import java.util.List;
-import java.util.Map;
 import java.util.Objects;
+import java.util.Set;
 import java.util.stream.Collectors;
 
 /**
- * Enhanced Smart Multi-Segment matcher (BETA).
- * Handles 1-to-N, N-to-1, and spread subtitle mapping with gap filling and best-fit overlap.
+ * Smart Multi-Segment matcher (BETA).
+ * Matches primary and secondary entries using significant overlap ratios,
+ * handling 1-to-N and N-to-1 subtitle mappings cleanly without duplicate propagation.
  */
 public final class SmartMultiSegmentMatcher implements SubtitleMatcher {
 
-    private static final long MIN_OVERLAP_THRESHOLD_MS = 50;
-    private static final long MAX_GAP_PROPAGATION_MS = 600; // Tolerance to bridge small timing gaps between dialogue turns
-
+    private static final long MIN_OVERLAP_MS = 200; // Minimum required overlap in milliseconds
+    private static final double MIN_OVERLAP_RATIO = 0.20; // Or at least 20% of the primary subtitle duration
     @Override
     public List<MergedSubtitleEntry> match(List<SubtitleEntry> primaryEntries, List<SubtitleEntry> secondaryEntries) {
         Objects.requireNonNull(primaryEntries, "Primary entries cannot be null");
         Objects.requireNonNull(secondaryEntries, "Secondary entries cannot be null");
 
-        Map<Integer, List<SubtitleEntry>> primaryToSecondaryMap = new HashMap<>();
-        List<SubtitleEntry> orphanSecondaryEntries = new ArrayList<>();
+        List<MergedSubtitleEntry> results = new ArrayList<>();
+        Set<Integer> matchedSecondaryIndices = new HashSet<>();
 
-        // 1. Best-fit assignment of each secondary entry to primary entries based on max overlap
-        for (SubtitleEntry secondary : secondaryEntries) {
-            int bestPrimaryIndex = -1;
-            long maxOverlapMs = MIN_OVERLAP_THRESHOLD_MS;
-
-            for (int pIdx = 0; pIdx < primaryEntries.size(); pIdx++) {
-                SubtitleEntry primary = primaryEntries.get(pIdx);
+        // 1. For each primary entry, find all secondary entries with significant overlap
+        for (SubtitleEntry primary : primaryEntries) {
+            long primaryDuration = Math.max(1, primary.getEndTimeMs() - primary.getStartTimeMs());
+            List<SubtitleEntry> matchingSecondaryList = new ArrayList<>();
+            for (int sIdx = 0; sIdx < secondaryEntries.size(); sIdx++) {
+                SubtitleEntry secondary = secondaryEntries.get(sIdx);
                 long overlapMs = primary.calculateOverlapMs(secondary);
 
-                if (overlapMs > maxOverlapMs) {
-                    maxOverlapMs = overlapMs;
-                    bestPrimaryIndex = pIdx;
+                double overlapRatio = (double) overlapMs / primaryDuration;
+
+                // Include secondary if overlap is significant
+                if (overlapMs >= MIN_OVERLAP_MS || overlapRatio >= MIN_OVERLAP_RATIO) {
+                    matchingSecondaryList.add(secondary);
+                    matchedSecondaryIndices.add(sIdx);
                 }
             }
 
-            if (bestPrimaryIndex != -1) {
-                primaryToSecondaryMap
-                    .computeIfAbsent(bestPrimaryIndex, k -> new ArrayList<>())
-                    .add(secondary);
-            } else {
-                orphanSecondaryEntries.add(secondary);
-            }
-        }
+            if (!matchingSecondaryList.isEmpty()) {
+                // Sort matching secondary entries chronologically
+                matchingSecondaryList.sort(Comparator.comparingLong(SubtitleEntry::getStartTimeMs));
 
-        // 2. Propagation pass: if a primary entry is empty, check if adjacent primary entries share the same secondary block or close timeframe
-        for (int pIdx = 0; pIdx < primaryEntries.size(); pIdx++) {
-            List<SubtitleEntry> assigned = primaryToSecondaryMap.get(pIdx);
-            if ((assigned == null || assigned.isEmpty()) && pIdx > 0) {
-                SubtitleEntry currentPrimary = primaryEntries.get(pIdx);
-                SubtitleEntry prevPrimary = primaryEntries.get(pIdx - 1);
-                
-                // If current primary starts shortly after previous primary ends, and previous has secondary text
-                if (currentPrimary.getStartTimeMs() - prevPrimary.getEndTimeMs() <= MAX_GAP_PROPAGATION_MS) {
-                    List<SubtitleEntry> prevAssigned = primaryToSecondaryMap.get(pIdx - 1);
-                    if (prevAssigned != null && !prevAssigned.isEmpty()) {
-                        // Share the last secondary entry if it bridges the gap
-                        SubtitleEntry lastPrevSec = prevAssigned.get(prevAssigned.size() - 1);
-                        if (currentPrimary.calculateOverlapMs(lastPrevSec) > 0 || 
-                            Math.abs(currentPrimary.getStartTimeMs() - lastPrevSec.getStartTimeMs()) < 1500) {
-                            primaryToSecondaryMap
-                                .computeIfAbsent(pIdx, k -> new ArrayList<>())
-                                .add(lastPrevSec);
-                        }
-                    }
-                }
-            }
-        }
-
-        List<MergedSubtitleEntry> results = new ArrayList<>();
-
-        // 3. Construct merged entries
-        for (int pIdx = 0; pIdx < primaryEntries.size(); pIdx++) {
-            SubtitleEntry primary = primaryEntries.get(pIdx);
-            List<SubtitleEntry> assignedSecondaryList = primaryToSecondaryMap.get(pIdx);
-
-            if (assignedSecondaryList != null && !assignedSecondaryList.isEmpty()) {
-                // Deduplicate and sort chronologically
-                List<SubtitleEntry> uniqueAssigned = assignedSecondaryList.stream()
-                    .distinct()
-                    .sorted(Comparator.comparingLong(SubtitleEntry::getStartTimeMs))
-                    .collect(Collectors.toList());
-
-                String concatenatedText = uniqueAssigned.stream()
+                String concatenatedText = matchingSecondaryList.stream()
                     .map(s -> s.getText().replace("\n", " ").replaceAll("\\s+", " ").trim())
+                    .distinct()
                     .collect(Collectors.joining(" "));
 
                 results.add(new MergedSubtitleEntry(
@@ -110,8 +70,10 @@ public final class SmartMultiSegmentMatcher implements SubtitleMatcher {
             }
         }
 
-        // 4. Add orphan secondary entries
-        for (SubtitleEntry orphan : orphanSecondaryEntries) {
+        // 2. Add orphan secondary entries that had no overlap with any primary entry
+        for (int sIdx = 0; sIdx < secondaryEntries.size(); sIdx++) {
+            if (!matchedSecondaryIndices.contains(sIdx)) {
+                SubtitleEntry orphan = secondaryEntries.get(sIdx);
             results.add(new MergedSubtitleEntry(
                 orphan.getStartTimeMs(),
                 orphan.getEndTimeMs(),
@@ -119,8 +81,9 @@ public final class SmartMultiSegmentMatcher implements SubtitleMatcher {
                 orphan.getText()
             ));
         }
+        }
 
-        // 5. Chronological sort
+        // 3. Final chronological sort
         results.sort(Comparator
             .comparingLong(MergedSubtitleEntry::getStartTimeMs)
             .thenComparingLong(MergedSubtitleEntry::getEndTimeMs)
