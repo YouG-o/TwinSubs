@@ -95,27 +95,27 @@ public final class AssFormatter {
         PositionMode positionMode = layout.positionMode();
 
         String primaryFormatted = entry.getPrimaryText()
-            .map(t -> applyInlineStyle(t, primaryStyle))
+            .map(t -> applyInlineStyle(escapeRawText(t), primaryStyle))
             .orElse("");
 
         String secondaryFormatted = entry.getSecondaryText()
-            .map(t -> applyInlineStyle(t, secondaryStyle))
+            .map(t -> applyInlineStyle(escapeRawText(t), secondaryStyle))
             .orElse("");
 
         if (!primaryFormatted.isEmpty() && !secondaryFormatted.isEmpty()) {
             if (positionMode == PositionMode.TOP_AND_BOTTOM) {
                 String topText = layout.isFirstTrackPrimary() ? primaryFormatted : secondaryFormatted;
                 String bottomText = layout.isFirstTrackPrimary() ? secondaryFormatted : primaryFormatted;
-                return "{\\an8}" + escapeAssText(topText) + "\\N" + escapeAssText(bottomText);
+                return "{\\an8}" + topText + "\\N" + bottomText;
             } else {
                 String firstText = layout.isFirstTrackPrimary() ? primaryFormatted : secondaryFormatted;
                 String secondText = layout.isFirstTrackPrimary() ? secondaryFormatted : primaryFormatted;
-                return escapeAssText(firstText) + "\\N" + escapeAssText(secondText);
+                return firstText + "\\N" + secondText;
             }
         } else if (!primaryFormatted.isEmpty()) {
-            return escapeAssText(primaryFormatted);
+            return primaryFormatted;
         } else {
-            return (positionMode == PositionMode.TOP_AND_BOTTOM ? "{\\an8}" : "") + escapeAssText(secondaryFormatted);
+            return (positionMode == PositionMode.TOP_AND_BOTTOM ? "{\\an8}" : "") + secondaryFormatted;
         }
     }
 
@@ -127,6 +127,10 @@ public final class AssFormatter {
         String italicTag = "\\i" + (style.isItalic() ? "1" : "0");
 
         return "{" + colorTag + fontTag + boldTag + italicTag + "}" + text;
+    }
+
+    private String escapeRawText(String text) {
+        return text.replace("\\", "\\\\").replace("\n", "\\N");
     }
 
     private String formatHexToAssColor(String hexColor) {
@@ -146,9 +150,5 @@ public final class AssFormatter {
         long cs = (rem % 1000) / 10; // Centiseconds (2 digits)
 
         return String.format("%d:%02d:%02d.%02d", h, m, s, cs);
-    }
-
-    private String escapeAssText(String text) {
-        return text.replace("\\", "\\\\").replace("\n", "\\N");
     }
 }
