@@ -20,12 +20,13 @@ public class App extends Application {
         );
         Parent root = loader.load();
 
-        Scene scene = new Scene(root, 800, 680);
+        // Initial window dimensions set to comfortably fit the 2-column layout without clipping
+        Scene scene = new Scene(root, 940, 720);
 
         primaryStage.setTitle("TwinSubs - Bilingual Subtitle Generator");
         primaryStage.setScene(scene);
-        primaryStage.setMinWidth(750);
-        primaryStage.setMinHeight(600);
+        primaryStage.setMinWidth(900);
+        primaryStage.setMinHeight(680);
         primaryStage.show();
     }
 
