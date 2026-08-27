@@ -6,6 +6,9 @@ Designed primarily for language learners, TwinSubs helps you master new language
 
 **Warning: TwinSubs is currently in active development. A functional portable release (Windows/macOS/Linux) is not yet available.**
 
+![App screenshot](./src/main/resources/images/app.png)
+
+
 ## Key Features
 
 - **Bilingual Fusion:** Merge two distinct subtitle tracks into one.
