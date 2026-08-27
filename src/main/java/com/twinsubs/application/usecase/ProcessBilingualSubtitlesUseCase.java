@@ -4,7 +4,6 @@ import com.twinsubs.application.dto.OutputOption;
 import com.twinsubs.application.dto.ProcessingProgress;
 import com.twinsubs.domain.model.MediaFile;
 import com.twinsubs.domain.model.MergedSubtitleEntry;
-import com.twinsubs.domain.model.PositionMode;
 import com.twinsubs.domain.model.SubtitleEntry;
 import com.twinsubs.domain.model.SubtitleLayout;
 import com.twinsubs.domain.model.SubtitleStyle;
@@ -27,45 +26,27 @@ public final class ProcessBilingualSubtitlesUseCase {
 
     private final FfmpegService ffmpegService;
     private final SrtParser srtParser;
-    private final SubtitleMatcher subtitleMatcher;
     private final AssFormatter assFormatter;
-
     public ProcessBilingualSubtitlesUseCase(FfmpegService ffmpegService,
                                            SrtParser srtParser,
-                                           SubtitleMatcher subtitleMatcher,
                                            AssFormatter assFormatter) {
         this.ffmpegService = Objects.requireNonNull(ffmpegService);
         this.srtParser = Objects.requireNonNull(srtParser);
-        this.subtitleMatcher = Objects.requireNonNull(subtitleMatcher);
         this.assFormatter = Objects.requireNonNull(assFormatter);
     }
 
-    /**
-     * Processes a list of media files with the user-defined styles and output preferences.
-     */
     public void execute(List<MediaFile> files,
                         int primaryTrackIndex,
                         int secondaryTrackIndex,
                         SubtitleStyle primaryStyle,
                         SubtitleStyle secondaryStyle,
-                        PositionMode positionMode,
-                        OutputOption outputOption,
-                        Consumer<ProcessingProgress> progressCallback) throws IOException, InterruptedException {
-
-                execute(files, primaryTrackIndex, secondaryTrackIndex, primaryStyle, secondaryStyle,
-                    SubtitleLayout.defaultLayout(positionMode), outputOption, progressCallback);
-                }
-
-                public void execute(List<MediaFile> files,
-                        int primaryTrackIndex,
-                        int secondaryTrackIndex,
-                        SubtitleStyle primaryStyle,
-                        SubtitleStyle secondaryStyle,
                         SubtitleLayout layout,
+                        SubtitleMatcher matcher,
                         OutputOption outputOption,
                         Consumer<ProcessingProgress> progressCallback) throws IOException, InterruptedException {
 
         Objects.requireNonNull(files, "Files list cannot be null");
+        Objects.requireNonNull(matcher, "Subtitle matcher cannot be null");
         int totalFiles = files.size();
 
         for (int i = 0; i < totalFiles; i++) {
@@ -89,8 +70,8 @@ public final class ProcessBilingualSubtitlesUseCase {
 
                 reportProgress(progressCallback, mediaFile.getFileName(), "Matching subtitle timelines...", baseRatio + (0.4 / totalFiles));
 
-                // 3. Match subtitle entries using V0 overlap algorithm
-                List<MergedSubtitleEntry> mergedEntries = subtitleMatcher.match(primaryEntries, secondaryEntries);
+                // 3. Match subtitle entries using selected strategy
+                List<MergedSubtitleEntry> mergedEntries = matcher.match(primaryEntries, secondaryEntries);
 
                 reportProgress(progressCallback, mediaFile.getFileName(), "Formatting ASS content...", baseRatio + (0.6 / totalFiles));
 
