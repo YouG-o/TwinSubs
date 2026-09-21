@@ -113,8 +113,32 @@
 </VBox>
 
         <!-- Settings & Output Section -->
-        <VBox styleClass="section-box" spacing="10">
+        <VBox styleClass="section-box" spacing="12">
             <Label text="%section.settings.title" styleClass="section-title"/>
+
+            <VBox spacing="6">
+                <HBox spacing="8" alignment="CENTER_LEFT">
+                    <Label text="%label.merge_method" style="-fx-font-weight: bold; -fx-text-fill: #374151;"/>
+                    <Button text="?" styleClass="info-button">
+                        <tooltip>
+                            <Tooltip text="%tooltip.method.direct" prefWidth="280" wrapText="true"/>
+                        </tooltip>
+                    </Button>
+                </HBox>
+
+                <VBox spacing="6">
+                    <RadioButton fx:id="radioMethodDirect" text="%method.direct" selected="true">
+                        <toggleGroup>
+                            <ToggleGroup fx:id="toggleMergeMethod"/>
+                        </toggleGroup>
+                    </RadioButton>
+                    <RadioButton fx:id="radioMethodDefault" text="%method.default" toggleGroup="$toggleMergeMethod"/>
+                    <RadioButton fx:id="radioMethodSmart" text="%method.smart" toggleGroup="$toggleMergeMethod"/>
+                </VBox>
+            </VBox>
+
+            <Separator/>
+
             <HBox spacing="15" alignment="CENTER_LEFT">
                 <Label text="%label.output_option" style="-fx-font-weight: bold; -fx-text-fill: #374151;"/>
                 <ComboBox fx:id="comboOutputOption" prefWidth="240" minWidth="180"/>
