@@ -8,6 +8,7 @@ import com.twinsubs.domain.model.PositionMode;
 import com.twinsubs.domain.model.SubtitleLayout;
 import com.twinsubs.domain.model.SubtitleStyle;
 import com.twinsubs.domain.model.SubtitleTrack;
+import com.twinsubs.domain.service.DirectSyncMatcher;
 import com.twinsubs.domain.service.SmartMultiSegmentMatcher;
 import com.twinsubs.domain.service.SubtitleMatcher;
 import com.twinsubs.domain.service.TemporalOverlapMatcher;
@@ -68,6 +69,7 @@ public final class MainController {
 
     @FXML private ComboBox<PositionMode> comboPositionMode;
     @FXML private CheckBox chkPrimaryFirst;
+    @FXML private RadioButton radioMethodDirect;
     @FXML private RadioButton radioMethodDefault;
     @FXML private RadioButton radioMethodSmart;
     @FXML private ComboBox<OutputOption> comboOutputOption;
@@ -245,9 +247,14 @@ public final class MainController {
             chkSecondaryBold.isSelected(), chkSecondaryItalic.isSelected()
         );
 
-        SubtitleMatcher selectedMatcher = (radioMethodSmart != null && radioMethodSmart.isSelected())
-            ? new SmartMultiSegmentMatcher()
-            : new TemporalOverlapMatcher();
+        SubtitleMatcher selectedMatcher;
+        if (radioMethodSmart != null && radioMethodSmart.isSelected()) {
+            selectedMatcher = new SmartMultiSegmentMatcher();
+        } else if (radioMethodDefault != null && radioMethodDefault.isSelected()) {
+            selectedMatcher = new TemporalOverlapMatcher();
+        } else {
+            selectedMatcher = new DirectSyncMatcher();
+        }
 
         btnStart.setDisable(true);
 

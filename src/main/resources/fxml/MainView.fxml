@@ -121,19 +121,20 @@
                     <Label text="%label.merge_method" style="-fx-font-weight: bold; -fx-text-fill: #374151;"/>
                     <Button text="?" styleClass="info-button">
                         <tooltip>
-                            <Tooltip text="%tooltip.method.smart" prefWidth="280" wrapText="true"/>
+                            <Tooltip text="%tooltip.method.direct" prefWidth="280" wrapText="true"/>
                         </tooltip>
                     </Button>
                 </HBox>
 
-                <HBox spacing="15" alignment="CENTER_LEFT">
-                    <RadioButton fx:id="radioMethodDefault" text="%method.default" selected="true">
+                <VBox spacing="6">
+                    <RadioButton fx:id="radioMethodDirect" text="%method.direct" selected="true">
                         <toggleGroup>
                             <ToggleGroup fx:id="toggleMergeMethod"/>
                         </toggleGroup>
                     </RadioButton>
+                    <RadioButton fx:id="radioMethodDefault" text="%method.default" toggleGroup="$toggleMergeMethod"/>
                     <RadioButton fx:id="radioMethodSmart" text="%method.smart" toggleGroup="$toggleMergeMethod"/>
-                </HBox>
+                </VBox>
             </VBox>
 
             <Separator/>
