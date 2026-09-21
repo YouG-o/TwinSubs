@@ -123,10 +123,18 @@ public final class AssFormatter {
         // Tag format: {\c&HBBGGRR&\fsSize\b1/0\i1/0}
         String colorTag = "\\c" + formatHexToAssColor(style.getHexColor());
         String fontTag = "\\fs" + style.getFontSize();
-        String boldTag = "\\b" + (style.isBold() ? "1" : "0");
-        String italicTag = "\\i" + (style.isItalic() ? "1" : "0");
 
-        return "{" + colorTag + fontTag + boldTag + italicTag + "}" + text;
+        boolean hasBoldHtml = text.contains("<b>") || text.contains("<strong>") || text.contains("</b>") || text.contains("</strong>");
+        boolean hasItalicHtml = text.contains("<i>") || text.contains("<em>") || text.contains("</i>") || text.contains("</em>");
+
+        String cleanText = text.replace("<b>", "{\\b1}").replace("</b>", "{\\b0}")
+                               .replace("<strong>", "{\\b1}").replace("</strong>", "{\\b0}")
+                               .replace("<i>", "{\\i1}").replace("</i>", "{\\i0}")
+                               .replace("<em>", "{\\i1}").replace("</em>", "{\\i0}");
+        String boldTag = hasBoldHtml ? "" : ("\\b" + (style.isBold() ? "1" : "0"));
+        String italicTag = hasItalicHtml ? "" : ("\\i" + (style.isItalic() ? "1" : "0"));
+
+        return "{" + colorTag + fontTag + boldTag + italicTag + "}" + cleanText;
     }
 
     private String escapeRawText(String text) {
@@ -152,3 +160,4 @@ public final class AssFormatter {
         return String.format("%d:%02d:%02d.%02d", h, m, s, cs);
     }
 }
+
