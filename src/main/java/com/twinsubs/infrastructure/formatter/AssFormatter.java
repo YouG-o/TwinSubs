@@ -50,13 +50,26 @@ public final class AssFormatter {
         sb.append("[V4+ Styles]\n")
           .append("Format: Name, Fontname, Fontsize, PrimaryColour, SecondaryColour, OutlineColour, BackColour, Bold, Italic, Underline, StrikeOut, ScaleX, ScaleY, Spacing, Angle, BorderStyle, Outline, Shadow, Alignment, MarginL, MarginR, MarginV, Encoding\n");
 
-        // Alignment values according to position mode (ASS numpad notation)
-        // 2 = Bottom center, 8 = Top center
+        // Alignment & MarginV values according to position mode and layout order
         int primaryAlign = (positionMode == PositionMode.BOTH_TOP) ? 8 : 2;
         int secondaryAlign = (positionMode == PositionMode.TOP_AND_BOTTOM) ? 8 : primaryAlign;
 
-        sb.append(buildStyleLine("PrimaryStyle", primaryStyle, primaryAlign)).append("\n");
-        sb.append(buildStyleLine("SecondaryStyle", secondaryStyle, secondaryAlign)).append("\n\n");
+        int primaryMarginV = 35;
+        int secondaryMarginV = 35;
+
+        // Clean adaptive spacing: calculate clearance based on the font size of the bottom track
+        int baseMargin = 45;
+        if (positionMode == PositionMode.BOTH_BOTTOM) {
+            int clearance = baseMargin + (layout.isFirstTrackPrimary() ? secondaryStyle.getFontSize() : primaryStyle.getFontSize()) * 2;
+            primaryMarginV = layout.isFirstTrackPrimary() ? clearance : baseMargin;
+            secondaryMarginV = layout.isFirstTrackPrimary() ? baseMargin : clearance;
+        } else if (positionMode == PositionMode.BOTH_TOP) {
+            int clearance = baseMargin + (layout.isFirstTrackPrimary() ? primaryStyle.getFontSize() : secondaryStyle.getFontSize()) * 2;
+            primaryMarginV = layout.isFirstTrackPrimary() ? baseMargin : clearance;
+            secondaryMarginV = layout.isFirstTrackPrimary() ? clearance : baseMargin;
+        }
+        sb.append(buildStyleLine("PrimaryStyle", primaryStyle, primaryAlign, primaryMarginV)).append("\n");
+        sb.append(buildStyleLine("SecondaryStyle", secondaryStyle, secondaryAlign, secondaryMarginV)).append("\n\n");
 
         // 3. Events section
         sb.append("[Events]\n")
@@ -64,18 +77,33 @@ public final class AssFormatter {
 
         for (MergedSubtitleEntry entry : entries) {
             String assText = formatDialogueText(entry, primaryStyle, secondaryStyle, layout);
-            sb.append(String.format("Dialogue: 0,%s,%s,Default,,0,0,0,,%s\n",
+
+            // Assign separate Layers (1 and 2) to disable collision pushing between the two independent tracks
+            int layer = 1;
+            String styleName = "PrimaryStyle";
+            if (entry.getSecondaryText().isPresent() && entry.getPrimaryText().isEmpty()) {
+                styleName = "SecondaryStyle";
+                layer = 2;
+            } else if (entry.getPrimaryText().isPresent() && entry.getSecondaryText().isEmpty()) {
+                styleName = "PrimaryStyle";
+                layer = 1;
+            } else if (entry.getPrimaryText().isPresent() && entry.getSecondaryText().isPresent()) {
+                styleName = "PrimaryStyle";
+                layer = 1;
+            }
+            sb.append(String.format("Dialogue: %d,%s,%s,%s,,0,0,0,,%s\n",
+                layer,
                 formatAssTimestamp(entry.getStartTimeMs()),
                 formatAssTimestamp(entry.getEndTimeMs()),
+                styleName,
                 assText
             ));
         }
 
         return sb.toString();
     }
-
-    private String buildStyleLine(String styleName, SubtitleStyle style, int alignment) {
-        return String.format("Style: %s,%s,%d,%s,%s,&H00000000,&H80000000,%d,%d,0,0,100,100,0,0,1,2,1,%d,40,40,35,1",
+    private String buildStyleLine(String styleName, SubtitleStyle style, int alignment, int marginV) {
+        return String.format("Style: %s,%s,%d,%s,%s,&H00000000,&H80000000,%d,%d,0,0,100,100,0,0,1,2,1,%d,40,40,%d,1",
             styleName,
             style.getFontName(),
             style.getFontSize(),
@@ -83,7 +111,8 @@ public final class AssFormatter {
             formatHexToAssColor(style.getHexColor()),
             style.isBold() ? 1 : 0,
             style.isItalic() ? 1 : 0,
-            alignment
+            alignment,
+            marginV
         );
     }
 
