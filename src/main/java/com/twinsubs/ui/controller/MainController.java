@@ -107,7 +107,7 @@ public final class MainController {
         chkPrimaryFirst.setSelected(false);
 
         comboOutputOption.getItems().setAll(OutputOption.values());
-        comboOutputOption.setValue(OutputOption.EMBED_IN_MKV);
+        comboOutputOption.setValue(OutputOption.EXTERNAL_ASS);
 
         comboPrimaryTrack.setCellFactory(p -> new TrackListCell());
         comboPrimaryTrack.setButtonCell(new TrackListCell());
