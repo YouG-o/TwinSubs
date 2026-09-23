@@ -124,11 +124,11 @@ public final class AssFormatter {
         PositionMode positionMode = layout.positionMode();
 
         String primaryFormatted = entry.getPrimaryText()
-            .map(t -> applyInlineStyle(escapeRawText(t), primaryStyle))
+            .map(t -> applyInlineStyle(escapeRawText(t, positionMode), primaryStyle))
             .orElse("");
 
         String secondaryFormatted = entry.getSecondaryText()
-            .map(t -> applyInlineStyle(escapeRawText(t), secondaryStyle))
+            .map(t -> applyInlineStyle(escapeRawText(t, positionMode), secondaryStyle))
             .orElse("");
 
         if (!primaryFormatted.isEmpty() && !secondaryFormatted.isEmpty()) {
@@ -166,8 +166,13 @@ public final class AssFormatter {
         return "{" + colorTag + fontTag + boldTag + italicTag + "}" + cleanText;
     }
 
-    private String escapeRawText(String text) {
-        return text.replace("\\", "\\\\").replace("\n", "\\N");
+    private String escapeRawText(String text, PositionMode positionMode) {
+        String cleaned = text;
+        if (positionMode == PositionMode.TOP_AND_BOTTOM) {
+            // Strip out ASS positioning tags (e.g. {\anX}, {\pos(...)}, {\move(...)}) in TOP_AND_BOTTOM mode
+            cleaned = cleaned.replaceAll("\\{\\\\(an\\d|pos|move|org)[^}]*\\}", "");
+        }
+        return cleaned.replace("\\", "\\\\").replace("\n", "\\N");
     }
 
     private String formatHexToAssColor(String hexColor) {
