@@ -58,12 +58,20 @@ public final class MainController {
     @FXML private ColorPicker cpPrimaryColor;
     @FXML private CheckBox chkPrimaryBold;
     @FXML private CheckBox chkPrimaryItalic;
+    @FXML private CheckBox chkPrimaryBg;
+    @FXML private HBox hboxPrimaryBgControls;
+    @FXML private ColorPicker cpPrimaryBgColor;
+    @FXML private Spinner<Integer> spnPrimaryBgOpacity;
 
     @FXML private TextField txtSecondaryFont;
     @FXML private Spinner<Integer> spnSecondarySize;
     @FXML private ColorPicker cpSecondaryColor;
     @FXML private CheckBox chkSecondaryBold;
     @FXML private CheckBox chkSecondaryItalic;
+    @FXML private CheckBox chkSecondaryBg;
+    @FXML private HBox hboxSecondaryBgControls;
+    @FXML private ColorPicker cpSecondaryBgColor;
+    @FXML private Spinner<Integer> spnSecondaryBgOpacity;
 
     @FXML private ComboBox<PositionMode> comboPositionMode;
     @FXML private CheckBox chkPrimaryFirst;
@@ -96,6 +104,15 @@ public final class MainController {
     public void initialize() {
         cpPrimaryColor.setValue(Color.web("#00FFFF"));
         cpSecondaryColor.setValue(Color.WHITE);
+        cpPrimaryBgColor.setValue(Color.BLACK);
+        cpSecondaryBgColor.setValue(Color.BLACK);
+
+        // Bind visibility and managed state of background controls containers to the checkbox
+        hboxPrimaryBgControls.visibleProperty().bind(chkPrimaryBg.selectedProperty());
+        hboxPrimaryBgControls.managedProperty().bind(chkPrimaryBg.selectedProperty());
+
+        hboxSecondaryBgControls.visibleProperty().bind(chkSecondaryBg.selectedProperty());
+        hboxSecondaryBgControls.managedProperty().bind(chkSecondaryBg.selectedProperty());
 
         comboPositionMode.getItems().setAll(PositionMode.values());
         comboPositionMode.setValue(PositionMode.BOTH_BOTTOM);
@@ -233,13 +250,15 @@ public final class MainController {
         SubtitleStyle primaryStyle = new SubtitleStyle(
             txtPrimaryFont.getText(), spnPrimarySize.getValue(),
             ColorUtils.toHexString(cpPrimaryColor.getValue()),
-            chkPrimaryBold.isSelected(), chkPrimaryItalic.isSelected()
+            chkPrimaryBold.isSelected(), chkPrimaryItalic.isSelected(),
+            chkPrimaryBg.isSelected(), ColorUtils.toHexString(cpPrimaryBgColor.getValue()), spnPrimaryBgOpacity.getValue()
         );
 
         SubtitleStyle secondaryStyle = new SubtitleStyle(
             txtSecondaryFont.getText(), spnSecondarySize.getValue(),
             ColorUtils.toHexString(cpSecondaryColor.getValue()),
-            chkSecondaryBold.isSelected(), chkSecondaryItalic.isSelected()
+            chkSecondaryBold.isSelected(), chkSecondaryItalic.isSelected(),
+            chkSecondaryBg.isSelected(), ColorUtils.toHexString(cpSecondaryBgColor.getValue()), spnSecondaryBgOpacity.getValue()
         );
 
         SubtitleMatcher selectedMatcher = new DirectSyncMatcher();
@@ -290,12 +309,18 @@ public final class MainController {
         cpPrimaryColor.valueProperty().addListener((obs, o, n) -> updatePreview());
         chkPrimaryBold.selectedProperty().addListener((obs, o, n) -> updatePreview());
         chkPrimaryItalic.selectedProperty().addListener((obs, o, n) -> updatePreview());
+        chkPrimaryBg.selectedProperty().addListener((obs, o, n) -> updatePreview());
+        cpPrimaryBgColor.valueProperty().addListener((obs, o, n) -> updatePreview());
+        spnPrimaryBgOpacity.valueProperty().addListener((obs, o, n) -> updatePreview());
 
         txtSecondaryFont.textProperty().addListener((obs, o, n) -> updatePreview());
         spnSecondarySize.valueProperty().addListener((obs, o, n) -> updatePreview());
         cpSecondaryColor.valueProperty().addListener((obs, o, n) -> updatePreview());
         chkSecondaryBold.selectedProperty().addListener((obs, o, n) -> updatePreview());
         chkSecondaryItalic.selectedProperty().addListener((obs, o, n) -> updatePreview());
+        chkSecondaryBg.selectedProperty().addListener((obs, o, n) -> updatePreview());
+        cpSecondaryBgColor.valueProperty().addListener((obs, o, n) -> updatePreview());
+        spnSecondaryBgOpacity.valueProperty().addListener((obs, o, n) -> updatePreview());
 
         comboPositionMode.valueProperty().addListener((obs, o, n) -> updatePreview());
         chkPrimaryFirst.selectedProperty().addListener((obs, o, n) -> updatePreview());
@@ -311,7 +336,10 @@ public final class MainController {
             spnPrimarySize.getValue() != null ? spnPrimarySize.getValue() : 50,
             ColorUtils.toHexString(cpPrimaryColor.getValue()),
             chkPrimaryBold.isSelected(),
-            chkPrimaryItalic.isSelected()
+            chkPrimaryItalic.isSelected(),
+            chkPrimaryBg.isSelected(),
+            ColorUtils.toHexString(cpPrimaryBgColor.getValue()),
+            spnPrimaryBgOpacity.getValue() != null ? spnPrimaryBgOpacity.getValue() : 80
         );
 
         SubtitleStyle secondaryStyle = new SubtitleStyle(
@@ -319,7 +347,10 @@ public final class MainController {
             spnSecondarySize.getValue() != null ? spnSecondarySize.getValue() : 38,
             ColorUtils.toHexString(cpSecondaryColor.getValue()),
             chkSecondaryBold.isSelected(),
-            chkSecondaryItalic.isSelected()
+            chkSecondaryItalic.isSelected(),
+            chkSecondaryBg.isSelected(),
+            ColorUtils.toHexString(cpSecondaryBgColor.getValue()),
+            spnSecondaryBgOpacity.getValue() != null ? spnSecondaryBgOpacity.getValue() : 80
         );
 
         previewManager.updatePreview(primaryStyle, secondaryStyle, createSubtitleLayout());

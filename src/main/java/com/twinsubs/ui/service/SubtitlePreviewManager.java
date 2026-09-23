@@ -81,8 +81,27 @@ public final class SubtitlePreviewManager {
 
         String colorHex = style.getHexColor();
         String hexColor = colorHex.startsWith("#") ? colorHex : "#" + colorHex;
-        label.setStyle("-fx-text-fill: " + hexColor + ";");
+        
+        StringBuilder styleBuilder = new StringBuilder("-fx-text-fill: ").append(hexColor).append(";");
+        if (style.isBackgroundEnabled()) {
+            String bgHex = style.getBackgroundHexColor();
+            String bgHexColor = bgHex.startsWith("#") ? bgHex : "#" + bgHex;
+            double opacity = style.getBackgroundOpacity() / 100.0;
+            styleBuilder.append(" -fx-background-color: ").append(toRgbaString(bgHexColor, opacity)).append(";");
+            styleBuilder.append(" -fx-padding: 3 6 3 6; -fx-background-radius: 3;");
+        }
+        label.setStyle(styleBuilder.toString());
 
         return label;
+    }
+
+    private String toRgbaString(String hexColor, double opacity) {
+        javafx.scene.paint.Color color = javafx.scene.paint.Color.web(hexColor);
+        return String.format("rgba(%d, %d, %d, %.2f)",
+            (int) (color.getRed() * 255),
+            (int) (color.getGreen() * 255),
+            (int) (color.getBlue() * 255),
+            opacity
+        );
     }
 }

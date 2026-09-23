@@ -103,14 +103,25 @@ public final class AssFormatter {
         return sb.toString();
     }
     private String buildStyleLine(String styleName, SubtitleStyle style, int alignment, int marginV) {
-        return String.format("Style: %s,%s,%d,%s,%s,&H00000000,&H80000000,%d,%d,0,0,100,100,0,0,1,2,1,%d,40,40,%d,1",
+        int borderStyle = style.isBackgroundEnabled() ? 3 : 1;
+        String backColor = style.isBackgroundEnabled() 
+            ? formatHexToAssAlphaColor(style.getBackgroundHexColor(), style.getBackgroundOpacity())
+            : "&H80000000&";
+        
+        // When background box is enabled (BorderStyle=3), use the backColor as outline colour too to ensure solid box rendering without black border artifact
+        String outlineColor = style.isBackgroundEnabled() ? backColor : "&H00000000&";
+
+        return String.format("Style: %s,%s,%d,%s,%s,%s,%s,%d,%d,0,0,100,100,0,0,%d,2,1,%d,40,40,%d,1",
             styleName,
             style.getFontName(),
             style.getFontSize(),
             formatHexToAssColor(style.getHexColor()),
             formatHexToAssColor(style.getHexColor()),
+            outlineColor,
+            backColor,
             style.isBold() ? 1 : 0,
             style.isItalic() ? 1 : 0,
+            borderStyle,
             alignment,
             marginV
         );
@@ -192,6 +203,19 @@ public final class AssFormatter {
         String g = hex.substring(2, 4);
         String b = hex.substring(4, 6);
         return "&H00" + b + g + r + "&"; // BGR format for ASS
+    }
+
+    private String formatHexToAssAlphaColor(String hexColor, int opacityPercent) {
+        // Opacity 0% (transparent) -> ASS Alpha FF (255)
+        // Opacity 100% (opaque) -> ASS Alpha 00 (0)
+        int alphaValue = (int) Math.round((1.0 - (opacityPercent / 100.0)) * 255.0);
+        String alphaHex = String.format("%02X", alphaValue);
+
+        String hex = hexColor.startsWith("#") ? hexColor.substring(1) : hexColor;
+        String r = hex.substring(0, 2);
+        String g = hex.substring(2, 4);
+        String b = hex.substring(4, 6);
+        return "&H" + alphaHex + b + g + r + "&";
     }
 
     private String formatAssTimestamp(long ms) {

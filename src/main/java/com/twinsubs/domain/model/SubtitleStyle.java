@@ -12,8 +12,12 @@ public final class SubtitleStyle {
     private final String hexColor; // Hexadecimal format "#RRGGBB"
     private final boolean bold;
     private final boolean italic;
+    private final boolean backgroundEnabled;
+    private final String backgroundHexColor;
+    private final int backgroundOpacity; // 0 to 100
 
-    public SubtitleStyle(String fontName, int fontSize, String hexColor, boolean bold, boolean italic) {
+    public SubtitleStyle(String fontName, int fontSize, String hexColor, boolean bold, boolean italic,
+                         boolean backgroundEnabled, String backgroundHexColor, int backgroundOpacity) {
         this.fontName = Objects.requireNonNull(fontName, "Font name cannot be null");
         if (fontSize <= 0) {
             throw new IllegalArgumentException("Font size must be positive: " + fontSize);
@@ -22,6 +26,9 @@ public final class SubtitleStyle {
         this.hexColor = sanitizeHexColor(hexColor);
         this.bold = bold;
         this.italic = italic;
+        this.backgroundEnabled = backgroundEnabled;
+        this.backgroundHexColor = sanitizeHexColor(backgroundHexColor);
+        this.backgroundOpacity = Math.clamp(backgroundOpacity, 0, 100);
     }
 
     private static String sanitizeHexColor(String hex) {
@@ -51,6 +58,18 @@ public final class SubtitleStyle {
         return italic;
     }
 
+    public boolean isBackgroundEnabled() {
+        return backgroundEnabled;
+    }
+
+    public String getBackgroundHexColor() {
+        return backgroundHexColor;
+    }
+
+    public int getBackgroundOpacity() {
+        return backgroundOpacity;
+    }
+
     @Override
     public boolean equals(Object o) {
         if (this == o) return true;
@@ -59,12 +78,15 @@ public final class SubtitleStyle {
         return fontSize == style.fontSize &&
                bold == style.bold &&
                italic == style.italic &&
+               backgroundEnabled == style.backgroundEnabled &&
+               backgroundOpacity == style.backgroundOpacity &&
                Objects.equals(fontName, style.fontName) &&
-               Objects.equals(hexColor, style.hexColor);
+               Objects.equals(hexColor, style.hexColor) &&
+               Objects.equals(backgroundHexColor, style.backgroundHexColor);
     }
 
     @Override
     public int hashCode() {
-        return Objects.hash(fontName, fontSize, hexColor, bold, italic);
+        return Objects.hash(fontName, fontSize, hexColor, bold, italic, backgroundEnabled, backgroundHexColor, backgroundOpacity);
     }
 }
