@@ -123,29 +123,39 @@ public final class AssFormatter {
 
         PositionMode positionMode = layout.positionMode();
 
+        // In TOP_AND_BOTTOM mode, we strictly force layout positioning, so ignore native tags.
+        // In other modes, honor native positioning tags if present.
+        boolean isTopAndBottom = (positionMode == PositionMode.TOP_AND_BOTTOM);
+        boolean primaryHasPosition = !isTopAndBottom && hasPositionTag(entry.getPrimaryText().orElse(""));
+        boolean secondaryHasPosition = !isTopAndBottom && hasPositionTag(entry.getSecondaryText().orElse(""));
+
         String primaryFormatted = entry.getPrimaryText()
-            .map(t -> applyInlineStyle(escapeRawText(t, positionMode), primaryStyle))
+            .map(t -> applyInlineStyle(escapeRawText(t, positionMode, primaryHasPosition), primaryStyle))
             .orElse("");
 
         String secondaryFormatted = entry.getSecondaryText()
-            .map(t -> applyInlineStyle(escapeRawText(t, positionMode), secondaryStyle))
+            .map(t -> applyInlineStyle(escapeRawText(t, positionMode, secondaryHasPosition), secondaryStyle))
             .orElse("");
 
         if (!primaryFormatted.isEmpty() && !secondaryFormatted.isEmpty()) {
             if (positionMode == PositionMode.TOP_AND_BOTTOM) {
                 String topText = layout.isFirstTrackPrimary() ? primaryFormatted : secondaryFormatted;
                 String bottomText = layout.isFirstTrackPrimary() ? secondaryFormatted : primaryFormatted;
-                return "{\\an8}" + topText + "\\N" + bottomText;
+                return "{\\an8}" + topText + "\\N{\\an2}" + bottomText;
             } else {
                 String firstText = layout.isFirstTrackPrimary() ? primaryFormatted : secondaryFormatted;
                 String secondText = layout.isFirstTrackPrimary() ? secondaryFormatted : primaryFormatted;
                 return firstText + "\\N" + secondText;
             }
         } else if (!primaryFormatted.isEmpty()) {
-            return primaryFormatted;
+            return (positionMode == PositionMode.TOP_AND_BOTTOM ? "{\\an2}" : "") + primaryFormatted;
         } else {
-            return (positionMode == PositionMode.TOP_AND_BOTTOM ? "{\\an8}" : "") + secondaryFormatted;
+            return (positionMode == PositionMode.TOP_AND_BOTTOM && !secondaryHasPosition ? "{\\an8}" : "") + secondaryFormatted;
         }
+    }
+
+    private boolean hasPositionTag(String text) {
+        return text != null && text.matches("(?s).*\\{\\\\(an\\d|pos|move|org)[^}]*\\}.*");
     }
 
     private String applyInlineStyle(String text, SubtitleStyle style) {
@@ -166,10 +176,11 @@ public final class AssFormatter {
         return "{" + colorTag + fontTag + boldTag + italicTag + "}" + cleanText;
     }
 
-    private String escapeRawText(String text, PositionMode positionMode) {
+    private String escapeRawText(String text, PositionMode positionMode, boolean hasPositionTag) {
         String cleaned = text;
-        if (positionMode == PositionMode.TOP_AND_BOTTOM) {
-            // Strip out ASS positioning tags (e.g. {\anX}, {\pos(...)}, {\move(...)}) in TOP_AND_BOTTOM mode
+        // In TOP_AND_BOTTOM mode, strip all positioning tags.
+        // In other modes, strip positioning tags ONLY IF the individual line doesn't explicitly declare its own position tag.
+        if (positionMode == PositionMode.TOP_AND_BOTTOM || !hasPositionTag) {
             cleaned = cleaned.replaceAll("\\{\\\\(an\\d|pos|move|org)[^}]*\\}", "");
         }
         return cleaned.replace("\\", "\\\\").replace("\n", "\\N");
