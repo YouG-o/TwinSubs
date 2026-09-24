@@ -121,10 +121,10 @@ public final class MainController {
         comboOutputOption.getItems().setAll(OutputOption.values());
         comboOutputOption.setValue(OutputOption.EXTERNAL_ASS);
 
-        comboPrimaryTrack.setCellFactory(p -> new TrackListCell());
-        comboPrimaryTrack.setButtonCell(new TrackListCell());
-        comboSecondaryTrack.setCellFactory(p -> new TrackListCell());
-        comboSecondaryTrack.setButtonCell(new TrackListCell());
+        comboPrimaryTrack.setCellFactory(p -> new TrackListCell(loadedMediaFiles, t -> compatibilityUseCase.isTrackAvailableInAll(t, loadedMediaFiles)));
+        comboPrimaryTrack.setButtonCell(new TrackListCell(loadedMediaFiles, t -> compatibilityUseCase.isTrackAvailableInAll(t, loadedMediaFiles)));
+        comboSecondaryTrack.setCellFactory(p -> new TrackListCell(loadedMediaFiles, t -> compatibilityUseCase.isTrackAvailableInAll(t, loadedMediaFiles)));
+        comboSecondaryTrack.setButtonCell(new TrackListCell(loadedMediaFiles, t -> compatibilityUseCase.isTrackAvailableInAll(t, loadedMediaFiles)));
 
         previewManager = new SubtitlePreviewManager(imgPreviewBackground, vboxPreviewTop, vboxPreviewBottom);
         attachPreviewListeners();
@@ -201,13 +201,23 @@ public final class MainController {
             lblCompactFileSummary.setText(i18n.get("file.summary.batch", firstFileName, loadedMediaFiles.size() - 1));
         }
 
-        List<SubtitleTrack> availableTracks = loadedMediaFiles.get(0).getTracks();
-        comboPrimaryTrack.getItems().setAll(availableTracks);
-        comboSecondaryTrack.getItems().setAll(availableTracks);
+        // Gather all unique tracks across all files in the batch
+        List<SubtitleTrack> allTracks = new ArrayList<>();
+        for (MediaFile file : loadedMediaFiles) {
+            for (SubtitleTrack track : file.getTracks()) {
+                if (allTracks.stream().noneMatch(t -> t.getLanguage().equalsIgnoreCase(track.getLanguage()) && t.getTitle().equalsIgnoreCase(track.getTitle()))) {
+                    allTracks.add(track);
+                }
+            }
+        }
 
-        if (!availableTracks.isEmpty()) {
-            comboPrimaryTrack.setValue(availableTracks.get(0));
-            comboSecondaryTrack.setValue(availableTracks.size() > 1 ? availableTracks.get(1) : availableTracks.get(0));
+        comboPrimaryTrack.getItems().setAll(allTracks);
+        comboSecondaryTrack.getItems().setAll(allTracks);
+
+        List<SubtitleTrack> commonTracks = compatibilityUseCase.getCommonTracks(loadedMediaFiles);
+        if (!commonTracks.isEmpty()) {
+            comboPrimaryTrack.setValue(commonTracks.get(0));
+            comboSecondaryTrack.setValue(commonTracks.size() > 1 ? commonTracks.get(1) : commonTracks.get(0));
         }
 
         setViewState(true);
