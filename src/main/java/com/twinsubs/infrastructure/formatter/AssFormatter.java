@@ -108,10 +108,16 @@ public final class AssFormatter {
             ? formatHexToAssAlphaColor(style.getBackgroundHexColor(), style.getBackgroundOpacity())
             : "&H80000000&";
         
-        // When background box is enabled (BorderStyle=3), use the backColor as outline colour too to ensure solid box rendering without black border artifact
-        String outlineColor = style.isBackgroundEnabled() ? backColor : "&H00000000&";
+        // When background box is enabled (BorderStyle=3), use backColor as outline colour too
+        String outlineColor = style.isBackgroundEnabled()
+            ? backColor
+            : (style.isOutlineEnabled() ? formatHexToAssColor(style.getOutlineHexColor()) : "&H00000000&");
 
-        return String.format("Style: %s,%s,%d,%s,%s,%s,%s,%d,%d,0,0,100,100,0,0,%d,2,1,%d,40,40,%d,1",
+        int outlineThickness = style.isBackgroundEnabled()
+            ? 2
+            : (style.isOutlineEnabled() ? style.getOutlineThickness() : 0);
+
+        return String.format("Style: %s,%s,%d,%s,%s,%s,%s,%d,%d,0,0,100,100,0,0,%d,%d,1,%d,40,40,%d,1",
             styleName,
             style.getFontName(),
             style.getFontSize(),
@@ -122,6 +128,7 @@ public final class AssFormatter {
             style.isBold() ? 1 : 0,
             style.isItalic() ? 1 : 0,
             borderStyle,
+            outlineThickness,
             alignment,
             marginV
         );

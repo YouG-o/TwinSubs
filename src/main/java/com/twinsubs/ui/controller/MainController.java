@@ -56,6 +56,10 @@ public final class MainController {
     @FXML private TextField txtPrimaryFont;
     @FXML private Spinner<Integer> spnPrimarySize;
     @FXML private ColorPicker cpPrimaryColor;
+    @FXML private CheckBox chkPrimaryOutline;
+    @FXML private HBox hboxPrimaryOutlineControls;
+    @FXML private Spinner<Integer> spnPrimaryOutline;
+    @FXML private ColorPicker cpPrimaryOutlineColor;
     @FXML private CheckBox chkPrimaryBold;
     @FXML private CheckBox chkPrimaryItalic;
     @FXML private CheckBox chkPrimaryBg;
@@ -66,6 +70,10 @@ public final class MainController {
     @FXML private TextField txtSecondaryFont;
     @FXML private Spinner<Integer> spnSecondarySize;
     @FXML private ColorPicker cpSecondaryColor;
+    @FXML private CheckBox chkSecondaryOutline;
+    @FXML private HBox hboxSecondaryOutlineControls;
+    @FXML private Spinner<Integer> spnSecondaryOutline;
+    @FXML private ColorPicker cpSecondaryOutlineColor;
     @FXML private CheckBox chkSecondaryBold;
     @FXML private CheckBox chkSecondaryItalic;
     @FXML private CheckBox chkSecondaryBg;
@@ -104,8 +112,17 @@ public final class MainController {
     public void initialize() {
         cpPrimaryColor.setValue(Color.web("#00FFFF"));
         cpSecondaryColor.setValue(Color.WHITE);
+        cpPrimaryOutlineColor.setValue(Color.BLACK);
+        cpSecondaryOutlineColor.setValue(Color.BLACK);
         cpPrimaryBgColor.setValue(Color.BLACK);
         cpSecondaryBgColor.setValue(Color.BLACK);
+
+        // Bind visibility and managed state of outline controls containers to their checkboxes
+        hboxPrimaryOutlineControls.visibleProperty().bind(chkPrimaryOutline.selectedProperty());
+        hboxPrimaryOutlineControls.managedProperty().bind(chkPrimaryOutline.selectedProperty());
+
+        hboxSecondaryOutlineControls.visibleProperty().bind(chkSecondaryOutline.selectedProperty());
+        hboxSecondaryOutlineControls.managedProperty().bind(chkSecondaryOutline.selectedProperty());
 
         // Bind visibility and managed state of background controls containers to the checkbox
         hboxPrimaryBgControls.visibleProperty().bind(chkPrimaryBg.selectedProperty());
@@ -261,6 +278,8 @@ public final class MainController {
             txtPrimaryFont.getText(), spnPrimarySize.getValue(),
             ColorUtils.toHexString(cpPrimaryColor.getValue()),
             chkPrimaryBold.isSelected(), chkPrimaryItalic.isSelected(),
+            chkPrimaryOutline.isSelected(), spnPrimaryOutline.getValue(),
+            ColorUtils.toHexString(cpPrimaryOutlineColor.getValue()),
             chkPrimaryBg.isSelected(), ColorUtils.toHexString(cpPrimaryBgColor.getValue()), spnPrimaryBgOpacity.getValue()
         );
 
@@ -268,6 +287,8 @@ public final class MainController {
             txtSecondaryFont.getText(), spnSecondarySize.getValue(),
             ColorUtils.toHexString(cpSecondaryColor.getValue()),
             chkSecondaryBold.isSelected(), chkSecondaryItalic.isSelected(),
+            chkSecondaryOutline.isSelected(), spnSecondaryOutline.getValue(),
+            ColorUtils.toHexString(cpSecondaryOutlineColor.getValue()),
             chkSecondaryBg.isSelected(), ColorUtils.toHexString(cpSecondaryBgColor.getValue()), spnSecondaryBgOpacity.getValue()
         );
 
@@ -317,6 +338,9 @@ public final class MainController {
         txtPrimaryFont.textProperty().addListener((obs, o, n) -> updatePreview());
         spnPrimarySize.valueProperty().addListener((obs, o, n) -> updatePreview());
         cpPrimaryColor.valueProperty().addListener((obs, o, n) -> updatePreview());
+        chkPrimaryOutline.selectedProperty().addListener((obs, o, n) -> updatePreview());
+        spnPrimaryOutline.valueProperty().addListener((obs, o, n) -> updatePreview());
+        cpPrimaryOutlineColor.valueProperty().addListener((obs, o, n) -> updatePreview());
         chkPrimaryBold.selectedProperty().addListener((obs, o, n) -> updatePreview());
         chkPrimaryItalic.selectedProperty().addListener((obs, o, n) -> updatePreview());
         chkPrimaryBg.selectedProperty().addListener((obs, o, n) -> updatePreview());
@@ -326,6 +350,9 @@ public final class MainController {
         txtSecondaryFont.textProperty().addListener((obs, o, n) -> updatePreview());
         spnSecondarySize.valueProperty().addListener((obs, o, n) -> updatePreview());
         cpSecondaryColor.valueProperty().addListener((obs, o, n) -> updatePreview());
+        chkSecondaryOutline.selectedProperty().addListener((obs, o, n) -> updatePreview());
+        spnSecondaryOutline.valueProperty().addListener((obs, o, n) -> updatePreview());
+        cpSecondaryOutlineColor.valueProperty().addListener((obs, o, n) -> updatePreview());
         chkSecondaryBold.selectedProperty().addListener((obs, o, n) -> updatePreview());
         chkSecondaryItalic.selectedProperty().addListener((obs, o, n) -> updatePreview());
         chkSecondaryBg.selectedProperty().addListener((obs, o, n) -> updatePreview());
@@ -347,6 +374,9 @@ public final class MainController {
             ColorUtils.toHexString(cpPrimaryColor.getValue()),
             chkPrimaryBold.isSelected(),
             chkPrimaryItalic.isSelected(),
+            chkPrimaryOutline.isSelected(),
+            spnPrimaryOutline.getValue() != null ? spnPrimaryOutline.getValue() : 2,
+            ColorUtils.toHexString(cpPrimaryOutlineColor.getValue()),
             chkPrimaryBg.isSelected(),
             ColorUtils.toHexString(cpPrimaryBgColor.getValue()),
             spnPrimaryBgOpacity.getValue() != null ? spnPrimaryBgOpacity.getValue() : 80
@@ -358,6 +388,9 @@ public final class MainController {
             ColorUtils.toHexString(cpSecondaryColor.getValue()),
             chkSecondaryBold.isSelected(),
             chkSecondaryItalic.isSelected(),
+            chkSecondaryOutline.isSelected(),
+            spnSecondaryOutline.getValue() != null ? spnSecondaryOutline.getValue() : 2,
+            ColorUtils.toHexString(cpSecondaryOutlineColor.getValue()),
             chkSecondaryBg.isSelected(),
             ColorUtils.toHexString(cpSecondaryBgColor.getValue()),
             spnSecondaryBgOpacity.getValue() != null ? spnSecondaryBgOpacity.getValue() : 80

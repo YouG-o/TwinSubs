@@ -83,6 +83,18 @@ public final class SubtitlePreviewManager {
         String hexColor = colorHex.startsWith("#") ? colorHex : "#" + colorHex;
         
         StringBuilder styleBuilder = new StringBuilder("-fx-text-fill: ").append(hexColor).append(";");
+
+        if (style.isOutlineEnabled() && style.getOutlineThickness() > 0) {
+            String outHex = style.getOutlineHexColor();
+            String outHexColor = outHex.startsWith("#") ? outHex : "#" + outHex;
+            int r = Math.max(1, (int) Math.round(style.getOutlineThickness() * SCALE_FACTOR * 3.5));
+            // 8-directional drop shadow mimicking ASS text stroke outline in JavaFX CSS
+            styleBuilder.append(String.format(
+                " -fx-effect: dropshadow(two-pass-box, %s, %d, 1.0, 0, 0);",
+                outHexColor, r
+            ));
+        }
+
         if (style.isBackgroundEnabled()) {
             String bgHex = style.getBackgroundHexColor();
             String bgHexColor = bgHex.startsWith("#") ? bgHex : "#" + bgHex;

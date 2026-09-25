@@ -12,11 +12,15 @@ public final class SubtitleStyle {
     private final String hexColor; // Hexadecimal format "#RRGGBB"
     private final boolean bold;
     private final boolean italic;
+    private final boolean outlineEnabled;
+    private final int outlineThickness; // 0 to 5
+    private final String outlineHexColor;
     private final boolean backgroundEnabled;
     private final String backgroundHexColor;
     private final int backgroundOpacity; // 0 to 100
 
     public SubtitleStyle(String fontName, int fontSize, String hexColor, boolean bold, boolean italic,
+                         boolean outlineEnabled, int outlineThickness, String outlineHexColor,
                          boolean backgroundEnabled, String backgroundHexColor, int backgroundOpacity) {
         this.fontName = Objects.requireNonNull(fontName, "Font name cannot be null");
         if (fontSize <= 0) {
@@ -26,6 +30,9 @@ public final class SubtitleStyle {
         this.hexColor = sanitizeHexColor(hexColor);
         this.bold = bold;
         this.italic = italic;
+        this.outlineEnabled = outlineEnabled;
+        this.outlineThickness = Math.clamp(outlineThickness, 0, 5);
+        this.outlineHexColor = sanitizeHexColor(outlineHexColor);
         this.backgroundEnabled = backgroundEnabled;
         this.backgroundHexColor = sanitizeHexColor(backgroundHexColor);
         this.backgroundOpacity = Math.clamp(backgroundOpacity, 0, 100);
@@ -58,6 +65,18 @@ public final class SubtitleStyle {
         return italic;
     }
 
+    public boolean isOutlineEnabled() {
+        return outlineEnabled;
+    }
+
+    public int getOutlineThickness() {
+        return outlineThickness;
+    }
+
+    public String getOutlineHexColor() {
+        return outlineHexColor;
+    }
+
     public boolean isBackgroundEnabled() {
         return backgroundEnabled;
     }
@@ -78,15 +97,18 @@ public final class SubtitleStyle {
         return fontSize == style.fontSize &&
                bold == style.bold &&
                italic == style.italic &&
+               outlineEnabled == style.outlineEnabled &&
+               outlineThickness == style.outlineThickness &&
                backgroundEnabled == style.backgroundEnabled &&
                backgroundOpacity == style.backgroundOpacity &&
                Objects.equals(fontName, style.fontName) &&
                Objects.equals(hexColor, style.hexColor) &&
+               Objects.equals(outlineHexColor, style.outlineHexColor) &&
                Objects.equals(backgroundHexColor, style.backgroundHexColor);
     }
 
     @Override
     public int hashCode() {
-        return Objects.hash(fontName, fontSize, hexColor, bold, italic, backgroundEnabled, backgroundHexColor, backgroundOpacity);
+        return Objects.hash(fontName, fontSize, hexColor, bold, italic, outlineEnabled, outlineThickness, outlineHexColor, backgroundEnabled, backgroundHexColor, backgroundOpacity);
     }
 }
