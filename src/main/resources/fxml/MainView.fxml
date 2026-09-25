@@ -81,6 +81,25 @@
 
                     <CheckBox fx:id="chkPrimaryBold" text="%checkbox.bold" GridPane.columnIndex="0" GridPane.rowIndex="3"/>
                     <CheckBox fx:id="chkPrimaryItalic" text="%checkbox.italic" GridPane.columnIndex="1" GridPane.rowIndex="3"/>
+
+                    <CheckBox fx:id="chkPrimaryOutline" text="%checkbox.outline" GridPane.columnIndex="0" GridPane.rowIndex="4" GridPane.columnSpan="2"/>
+                    <HBox fx:id="hboxPrimaryOutlineControls" spacing="8" alignment="CENTER_LEFT" GridPane.columnIndex="0" GridPane.rowIndex="5" GridPane.columnSpan="2">
+                        <ColorPicker fx:id="cpPrimaryOutlineColor" prefWidth="110"/>
+                        <Spinner fx:id="spnPrimaryOutline" initialValue="2" min="1" max="5" prefWidth="80"/>
+                    </HBox>
+
+                    <HBox spacing="5" alignment="CENTER_LEFT" GridPane.columnIndex="0" GridPane.rowIndex="6" GridPane.columnSpan="2">
+                        <CheckBox fx:id="chkPrimaryBg" text="%checkbox.background"/>
+                        <Label text="ⓘ" style="-fx-text-fill: #6b7280; -fx-cursor: hand; -fx-font-weight: bold;">
+                            <tooltip>
+                                <Tooltip text="%tooltip.background_compatibility" wrapText="true" prefWidth="280"/>
+                            </tooltip>
+                        </Label>
+                    </HBox>
+                    <HBox fx:id="hboxPrimaryBgControls" spacing="8" alignment="CENTER_LEFT" GridPane.columnIndex="0" GridPane.rowIndex="7" GridPane.columnSpan="2">
+                        <ColorPicker fx:id="cpPrimaryBgColor" prefWidth="110"/>
+                        <Spinner fx:id="spnPrimaryBgOpacity" initialValue="80" min="0" max="100" prefWidth="80"/>
+                    </HBox>
                 </GridPane>
             </VBox>
 
@@ -99,6 +118,25 @@
 
                     <CheckBox fx:id="chkSecondaryBold" text="%checkbox.bold" GridPane.columnIndex="0" GridPane.rowIndex="3"/>
                     <CheckBox fx:id="chkSecondaryItalic" text="%checkbox.italic" selected="true" GridPane.columnIndex="1" GridPane.rowIndex="3"/>
+
+                    <CheckBox fx:id="chkSecondaryOutline" text="%checkbox.outline" GridPane.columnIndex="0" GridPane.rowIndex="4" GridPane.columnSpan="2"/>
+                    <HBox fx:id="hboxSecondaryOutlineControls" spacing="8" alignment="CENTER_LEFT" GridPane.columnIndex="0" GridPane.rowIndex="5" GridPane.columnSpan="2">
+                        <ColorPicker fx:id="cpSecondaryOutlineColor" prefWidth="110"/>
+                        <Spinner fx:id="spnSecondaryOutline" initialValue="2" min="1" max="5" prefWidth="80"/>
+                    </HBox>
+
+                    <HBox spacing="5" alignment="CENTER_LEFT" GridPane.columnIndex="0" GridPane.rowIndex="6" GridPane.columnSpan="2">
+                        <CheckBox fx:id="chkSecondaryBg" text="%checkbox.background"/>
+                        <Label text="ⓘ" style="-fx-text-fill: #6b7280; -fx-cursor: hand; -fx-font-weight: bold;">
+                            <tooltip>
+                                <Tooltip text="%tooltip.background_compatibility" wrapText="true" prefWidth="280"/>
+                            </tooltip>
+                        </Label>
+                    </HBox>
+                    <HBox fx:id="hboxSecondaryBgControls" spacing="8" alignment="CENTER_LEFT" GridPane.columnIndex="0" GridPane.rowIndex="7" GridPane.columnSpan="2">
+                        <ColorPicker fx:id="cpSecondaryBgColor" prefWidth="110"/>
+                        <Spinner fx:id="spnSecondaryBgOpacity" initialValue="80" min="0" max="100" prefWidth="80"/>
+                    </HBox>
                 </GridPane>
             </VBox>
         </HBox>

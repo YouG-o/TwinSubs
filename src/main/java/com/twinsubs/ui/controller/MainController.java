@@ -56,14 +56,30 @@ public final class MainController {
     @FXML private TextField txtPrimaryFont;
     @FXML private Spinner<Integer> spnPrimarySize;
     @FXML private ColorPicker cpPrimaryColor;
+    @FXML private CheckBox chkPrimaryOutline;
+    @FXML private HBox hboxPrimaryOutlineControls;
+    @FXML private Spinner<Integer> spnPrimaryOutline;
+    @FXML private ColorPicker cpPrimaryOutlineColor;
     @FXML private CheckBox chkPrimaryBold;
     @FXML private CheckBox chkPrimaryItalic;
+    @FXML private CheckBox chkPrimaryBg;
+    @FXML private HBox hboxPrimaryBgControls;
+    @FXML private ColorPicker cpPrimaryBgColor;
+    @FXML private Spinner<Integer> spnPrimaryBgOpacity;
 
     @FXML private TextField txtSecondaryFont;
     @FXML private Spinner<Integer> spnSecondarySize;
     @FXML private ColorPicker cpSecondaryColor;
+    @FXML private CheckBox chkSecondaryOutline;
+    @FXML private HBox hboxSecondaryOutlineControls;
+    @FXML private Spinner<Integer> spnSecondaryOutline;
+    @FXML private ColorPicker cpSecondaryOutlineColor;
     @FXML private CheckBox chkSecondaryBold;
     @FXML private CheckBox chkSecondaryItalic;
+    @FXML private CheckBox chkSecondaryBg;
+    @FXML private HBox hboxSecondaryBgControls;
+    @FXML private ColorPicker cpSecondaryBgColor;
+    @FXML private Spinner<Integer> spnSecondaryBgOpacity;
 
     @FXML private ComboBox<PositionMode> comboPositionMode;
     @FXML private CheckBox chkPrimaryFirst;
@@ -96,6 +112,24 @@ public final class MainController {
     public void initialize() {
         cpPrimaryColor.setValue(Color.web("#00FFFF"));
         cpSecondaryColor.setValue(Color.WHITE);
+        cpPrimaryOutlineColor.setValue(Color.BLACK);
+        cpSecondaryOutlineColor.setValue(Color.BLACK);
+        cpPrimaryBgColor.setValue(Color.BLACK);
+        cpSecondaryBgColor.setValue(Color.BLACK);
+
+        // Bind visibility and managed state of outline controls containers to their checkboxes
+        hboxPrimaryOutlineControls.visibleProperty().bind(chkPrimaryOutline.selectedProperty());
+        hboxPrimaryOutlineControls.managedProperty().bind(chkPrimaryOutline.selectedProperty());
+
+        hboxSecondaryOutlineControls.visibleProperty().bind(chkSecondaryOutline.selectedProperty());
+        hboxSecondaryOutlineControls.managedProperty().bind(chkSecondaryOutline.selectedProperty());
+
+        // Bind visibility and managed state of background controls containers to the checkbox
+        hboxPrimaryBgControls.visibleProperty().bind(chkPrimaryBg.selectedProperty());
+        hboxPrimaryBgControls.managedProperty().bind(chkPrimaryBg.selectedProperty());
+
+        hboxSecondaryBgControls.visibleProperty().bind(chkSecondaryBg.selectedProperty());
+        hboxSecondaryBgControls.managedProperty().bind(chkSecondaryBg.selectedProperty());
 
         comboPositionMode.getItems().setAll(PositionMode.values());
         comboPositionMode.setValue(PositionMode.BOTH_BOTTOM);
@@ -104,10 +138,10 @@ public final class MainController {
         comboOutputOption.getItems().setAll(OutputOption.values());
         comboOutputOption.setValue(OutputOption.EXTERNAL_ASS);
 
-        comboPrimaryTrack.setCellFactory(p -> new TrackListCell());
-        comboPrimaryTrack.setButtonCell(new TrackListCell());
-        comboSecondaryTrack.setCellFactory(p -> new TrackListCell());
-        comboSecondaryTrack.setButtonCell(new TrackListCell());
+        comboPrimaryTrack.setCellFactory(p -> new TrackListCell(loadedMediaFiles, t -> compatibilityUseCase.isTrackAvailableInAll(t, loadedMediaFiles)));
+        comboPrimaryTrack.setButtonCell(new TrackListCell(loadedMediaFiles, t -> compatibilityUseCase.isTrackAvailableInAll(t, loadedMediaFiles)));
+        comboSecondaryTrack.setCellFactory(p -> new TrackListCell(loadedMediaFiles, t -> compatibilityUseCase.isTrackAvailableInAll(t, loadedMediaFiles)));
+        comboSecondaryTrack.setButtonCell(new TrackListCell(loadedMediaFiles, t -> compatibilityUseCase.isTrackAvailableInAll(t, loadedMediaFiles)));
 
         previewManager = new SubtitlePreviewManager(imgPreviewBackground, vboxPreviewTop, vboxPreviewBottom);
         attachPreviewListeners();
@@ -184,13 +218,23 @@ public final class MainController {
             lblCompactFileSummary.setText(i18n.get("file.summary.batch", firstFileName, loadedMediaFiles.size() - 1));
         }
 
-        List<SubtitleTrack> availableTracks = loadedMediaFiles.get(0).getTracks();
-        comboPrimaryTrack.getItems().setAll(availableTracks);
-        comboSecondaryTrack.getItems().setAll(availableTracks);
+        // Gather all unique tracks across all files in the batch
+        List<SubtitleTrack> allTracks = new ArrayList<>();
+        for (MediaFile file : loadedMediaFiles) {
+            for (SubtitleTrack track : file.getTracks()) {
+                if (allTracks.stream().noneMatch(t -> t.getLanguage().equalsIgnoreCase(track.getLanguage()) && t.getTitle().equalsIgnoreCase(track.getTitle()))) {
+                    allTracks.add(track);
+                }
+            }
+        }
 
-        if (!availableTracks.isEmpty()) {
-            comboPrimaryTrack.setValue(availableTracks.get(0));
-            comboSecondaryTrack.setValue(availableTracks.size() > 1 ? availableTracks.get(1) : availableTracks.get(0));
+        comboPrimaryTrack.getItems().setAll(allTracks);
+        comboSecondaryTrack.getItems().setAll(allTracks);
+
+        List<SubtitleTrack> commonTracks = compatibilityUseCase.getCommonTracks(loadedMediaFiles);
+        if (!commonTracks.isEmpty()) {
+            comboPrimaryTrack.setValue(commonTracks.get(0));
+            comboSecondaryTrack.setValue(commonTracks.size() > 1 ? commonTracks.get(1) : commonTracks.get(0));
         }
 
         setViewState(true);
@@ -233,13 +277,19 @@ public final class MainController {
         SubtitleStyle primaryStyle = new SubtitleStyle(
             txtPrimaryFont.getText(), spnPrimarySize.getValue(),
             ColorUtils.toHexString(cpPrimaryColor.getValue()),
-            chkPrimaryBold.isSelected(), chkPrimaryItalic.isSelected()
+            chkPrimaryBold.isSelected(), chkPrimaryItalic.isSelected(),
+            chkPrimaryOutline.isSelected(), spnPrimaryOutline.getValue(),
+            ColorUtils.toHexString(cpPrimaryOutlineColor.getValue()),
+            chkPrimaryBg.isSelected(), ColorUtils.toHexString(cpPrimaryBgColor.getValue()), spnPrimaryBgOpacity.getValue()
         );
 
         SubtitleStyle secondaryStyle = new SubtitleStyle(
             txtSecondaryFont.getText(), spnSecondarySize.getValue(),
             ColorUtils.toHexString(cpSecondaryColor.getValue()),
-            chkSecondaryBold.isSelected(), chkSecondaryItalic.isSelected()
+            chkSecondaryBold.isSelected(), chkSecondaryItalic.isSelected(),
+            chkSecondaryOutline.isSelected(), spnSecondaryOutline.getValue(),
+            ColorUtils.toHexString(cpSecondaryOutlineColor.getValue()),
+            chkSecondaryBg.isSelected(), ColorUtils.toHexString(cpSecondaryBgColor.getValue()), spnSecondaryBgOpacity.getValue()
         );
 
         SubtitleMatcher selectedMatcher = new DirectSyncMatcher();
@@ -288,14 +338,26 @@ public final class MainController {
         txtPrimaryFont.textProperty().addListener((obs, o, n) -> updatePreview());
         spnPrimarySize.valueProperty().addListener((obs, o, n) -> updatePreview());
         cpPrimaryColor.valueProperty().addListener((obs, o, n) -> updatePreview());
+        chkPrimaryOutline.selectedProperty().addListener((obs, o, n) -> updatePreview());
+        spnPrimaryOutline.valueProperty().addListener((obs, o, n) -> updatePreview());
+        cpPrimaryOutlineColor.valueProperty().addListener((obs, o, n) -> updatePreview());
         chkPrimaryBold.selectedProperty().addListener((obs, o, n) -> updatePreview());
         chkPrimaryItalic.selectedProperty().addListener((obs, o, n) -> updatePreview());
+        chkPrimaryBg.selectedProperty().addListener((obs, o, n) -> updatePreview());
+        cpPrimaryBgColor.valueProperty().addListener((obs, o, n) -> updatePreview());
+        spnPrimaryBgOpacity.valueProperty().addListener((obs, o, n) -> updatePreview());
 
         txtSecondaryFont.textProperty().addListener((obs, o, n) -> updatePreview());
         spnSecondarySize.valueProperty().addListener((obs, o, n) -> updatePreview());
         cpSecondaryColor.valueProperty().addListener((obs, o, n) -> updatePreview());
+        chkSecondaryOutline.selectedProperty().addListener((obs, o, n) -> updatePreview());
+        spnSecondaryOutline.valueProperty().addListener((obs, o, n) -> updatePreview());
+        cpSecondaryOutlineColor.valueProperty().addListener((obs, o, n) -> updatePreview());
         chkSecondaryBold.selectedProperty().addListener((obs, o, n) -> updatePreview());
         chkSecondaryItalic.selectedProperty().addListener((obs, o, n) -> updatePreview());
+        chkSecondaryBg.selectedProperty().addListener((obs, o, n) -> updatePreview());
+        cpSecondaryBgColor.valueProperty().addListener((obs, o, n) -> updatePreview());
+        spnSecondaryBgOpacity.valueProperty().addListener((obs, o, n) -> updatePreview());
 
         comboPositionMode.valueProperty().addListener((obs, o, n) -> updatePreview());
         chkPrimaryFirst.selectedProperty().addListener((obs, o, n) -> updatePreview());
@@ -311,7 +373,13 @@ public final class MainController {
             spnPrimarySize.getValue() != null ? spnPrimarySize.getValue() : 50,
             ColorUtils.toHexString(cpPrimaryColor.getValue()),
             chkPrimaryBold.isSelected(),
-            chkPrimaryItalic.isSelected()
+            chkPrimaryItalic.isSelected(),
+            chkPrimaryOutline.isSelected(),
+            spnPrimaryOutline.getValue() != null ? spnPrimaryOutline.getValue() : 2,
+            ColorUtils.toHexString(cpPrimaryOutlineColor.getValue()),
+            chkPrimaryBg.isSelected(),
+            ColorUtils.toHexString(cpPrimaryBgColor.getValue()),
+            spnPrimaryBgOpacity.getValue() != null ? spnPrimaryBgOpacity.getValue() : 80
         );
 
         SubtitleStyle secondaryStyle = new SubtitleStyle(
@@ -319,7 +387,13 @@ public final class MainController {
             spnSecondarySize.getValue() != null ? spnSecondarySize.getValue() : 38,
             ColorUtils.toHexString(cpSecondaryColor.getValue()),
             chkSecondaryBold.isSelected(),
-            chkSecondaryItalic.isSelected()
+            chkSecondaryItalic.isSelected(),
+            chkSecondaryOutline.isSelected(),
+            spnSecondaryOutline.getValue() != null ? spnSecondaryOutline.getValue() : 2,
+            ColorUtils.toHexString(cpSecondaryOutlineColor.getValue()),
+            chkSecondaryBg.isSelected(),
+            ColorUtils.toHexString(cpSecondaryBgColor.getValue()),
+            spnSecondaryBgOpacity.getValue() != null ? spnSecondaryBgOpacity.getValue() : 80
         );
 
         previewManager.updatePreview(primaryStyle, secondaryStyle, createSubtitleLayout());
